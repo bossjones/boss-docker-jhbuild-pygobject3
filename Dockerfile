@@ -169,6 +169,12 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         libllvm3.8 \
                         libsoundtouch-dev \
                         libsoundtouch1 \
+                        # For general debugging
+                        gdb \
+                        strace \
+                        lsof \
+                        ltrace \
+                        graphviz \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
          apt-get clean && \
@@ -223,6 +229,8 @@ RUN set -xe \
 USER pi
 
 WORKDIR /home/pi
+
+ENV HOME "/home/pi"
 
 # Create a basic .jhbuildrc
 RUN echo "import os"                                   > /home/pi/.jhbuildrc && \
@@ -394,13 +402,22 @@ RUN mkdir -p /home/pi/gnome && \
     jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run make clean all > /dev/null && \
-    jhbuild run make install > /dev/null
+    jhbuild run make install > /dev/null && \
+
+    echo "****************[GDBINIT]****************" && \
+    sudo zcat /usr/share/doc/python3.5/gdbinit.gz > /home/pi/.gdbinit && \
+    sudo chown pi:pi /home/pi/.gdbinit && \
+
+    echo "****************[GSTREAMER-COMPLETION]****************" && \
+    curl -L 'https://raw.githubusercontent.com/drothlis/gstreamer/bash-completion-master/tools/gstreamer-completion' | sudo tee -a /etc/bash_completion.d/gstreamer-completion && \
+    sudo chown root:root /etc/bash_completion.d/gstreamer-completion
+
 
 
 # Overlay the root filesystem from this repo
 COPY ./container/root /
 
-RUN goss -g /tests/goss.jhbuild.yaml validate
+RUN goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
 
 # NOTE: intentionally NOT using s6 init as the entrypoint
 # This would prevent container debugging if any of those service crash
