@@ -62,7 +62,7 @@ ENV XDG_DATA_DIRS ${PREFIX}/share:/usr/share
 # /home/pi/jhbuild/etc/xdg
 ENV XDG_CONFIG_DIRS ${PREFIX}/etc/xdg
 
-ENV PYTHON /usr/bin/python3
+ENV PYTHON /usr/local/bin/python3
 ENV TERM xterm
 ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
