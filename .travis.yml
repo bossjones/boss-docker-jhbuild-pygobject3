@@ -1,0 +1,45 @@
+# -*- coding: utf-8 -*-
+
+matrix:
+  fast_finish: true
+  include:
+  - python: '3.5'
+    env: DOCKER_COMPOSE_VERSION=1.8.0 TEST_TARGET=default DOCKER_DATA="$HOME/docker_data" DOCKER_VERSION=1.12.0-0~trusty DOCKER_COMPOSE_VERSION=1.8.0
+    sudo: required
+    dist: trusty
+    language: python
+    group: edge
+
+services:
+  - docker
+
+before_install:
+  # List available docker versions.
+  - apt-cache madison docker-engine
+  # Update Docker. See: https://graysonkoonce.com/managing-docker-and-docker-compose-versions-on-travis-ci/.
+  - sudo apt-get -o Dpkg::Options::="--force-confnew" install -y --force-yes docker-engine=${DOCKER_VERSION}
+  # Add docker-compose at the version specified in ENV.
+  - sudo rm -f /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - docker-compose --version
+
+cache:
+  apt: true
+
+install:
+  - travis_retry docker-compose pull
+  # set containers as privileged to bypass Travis environment limitations
+  - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
+  - travis_retry docker-compose -f docker-compose.yml -f ci_build.yml build
+
+script:
+  - docker run --privileged -v `pwd`:/home/pi/dev/bossjones-github/scarlett_os -i -t --rm jhbuild_pygobject3 who
+
+# source: https://github.com/inspirehep/inspire-next/blob/9700274c36074a3e43168bf48b8ba3e3bfa7bcdf/.travis.yml
+after_script:
+  # Killing via SIGTERM in order to trigger atexit and dump coverage information in WSGI
+  - "docker-compose -f docker-compose.yml kill -s SIGTERM"
+  - "docker-compose -f docker-compose.yml rm -f"
+
