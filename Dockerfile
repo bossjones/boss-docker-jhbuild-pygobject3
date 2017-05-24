@@ -33,7 +33,7 @@ ENV ENABLE_GTK yes
 ENV PYTHON_VERSION_MAJOR 3
 ENV PYTHON_VERSION 3.5
 ENV CFLAGS "-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer"
-ENV MAKEFLAGS "-j4"
+ENV MAKEFLAGS "-j4 V=1"
 
 # /home/pi/jhbuild
 ENV PREFIX "${USER_HOME}/jhbuild"
@@ -66,6 +66,9 @@ ENV PYTHON "python3"
 ENV TERM xterm
 ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
+
+# FIXME: required for jhbuild( sudo apt-get install docbook-xsl build-essential git-core python-libxml2 )
+# source: https://wiki.gnome.org/HowDoI/Jhbuild
 
 RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
@@ -203,6 +206,11 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         strace \
                         lsof \
                         ltrace \
+                        yelp-xsl \
+                        docbook-xsl \
+                        docbook-xsl-doc-html \
+                        python-libxslt1 \
+                        libxslt1-dev \
                         graphviz \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
@@ -320,6 +328,7 @@ RUN echo "import os"                                   > /home/pi/.jhbuildrc && 
     echo "moduleset = 'gnome-world'"                  >> /home/pi/.jhbuildrc && \
     echo "interact = False"                           >> /home/pi/.jhbuildrc && \
     echo "makeargs = '$MAKEFLAGS'"                  >> /home/pi/.jhbuildrc && \
+    echo "module_autogenargs['gtk-doc'] = 'PYTHON=/usr/bin/python3'" >> /home/pi/.jhbuildrc && \
     echo "os.environ['CFLAGS'] = '$CFLAGS'"         >> /home/pi/.jhbuildrc && \
     echo "os.environ['PYTHON'] = 'python$PYTHON_VERSION_MAJOR'"           >> /home/pi/.jhbuildrc && \
     echo "os.environ['GSTREAMER'] = '1.0'"            >> /home/pi/.jhbuildrc && \
@@ -327,7 +336,7 @@ RUN echo "import os"                                   > /home/pi/.jhbuildrc && 
     echo "os.environ['ENABLE_GTK'] = 'yes'"           >> /home/pi/.jhbuildrc && \
     echo "os.environ['PYTHON_VERSION'] = '$PYTHON_VERSION'"       >> /home/pi/.jhbuildrc && \
     echo "os.environ['CFLAGS'] = '-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['MAKEFLAGS'] = '-j4'"            >> /home/pi/.jhbuildrc && \
+    echo "os.environ['MAKEFLAGS'] = '-j4 V=1'"            >> /home/pi/.jhbuildrc && \
     echo "os.environ['PREFIX'] = '$USER_HOME/jhbuild'"   >> /home/pi/.jhbuildrc && \
     echo "os.environ['JHBUILD'] = '$USER_HOME/gnome'"    >> /home/pi/.jhbuildrc && \
     echo "os.environ['PATH'] = '$PREFIX/bin:$PREFIX/sbin:$PATH'" >> /home/pi/.jhbuildrc && \
@@ -385,7 +394,7 @@ RUN mkdir -p /home/pi/gnome && \
     cd /home/pi/gnome && \
     cd pygobject && \
     git checkout fb1b8fa8a67f2c7ea7ad4b53076496a8f2b4afdb && \
-    jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild --with-python=python3 > /dev/null && \
+    jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild --with-python=$(which python3) > /dev/null && \
     jhbuild run make install > /dev/null && \
 
     echo "****************[GSTREAMER]****************" && \
@@ -393,7 +402,7 @@ RUN mkdir -p /home/pi/gnome && \
     curl -L "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.8.2.tar.xz" > gstreamer-1.8.2.tar.xz && \
     tar -xJf gstreamer-1.8.2.tar.xz && \
     cd gstreamer-1.8.2 && \
-    jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \
+    jhbuild run ./configure --enable-doc-installation=no --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
 
@@ -435,6 +444,7 @@ RUN mkdir -p /home/pi/gnome && \
 
     echo "****************[GST-PLUGINS-BAD]****************" && \
     cat /home/pi/jhbuild/bin/gdbus-codegen && \
+    export BOSSJONES_PATH_TO_PYTHON=$(which python3) && \
     sed -i "s,#!python3,#!/usr/bin/python3,g" /home/pi/jhbuild/bin/gdbus-codegen && \
     cat /home/pi/jhbuild/bin/gdbus-codegen && \
     cd /home/pi/gnome && \
