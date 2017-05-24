@@ -34,12 +34,9 @@ install:
   - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
   - travis_retry docker-compose -f docker-compose.yml -f ci_build.yml build
 
-script:
-  - docker run --privileged -v `pwd`:/home/pi/dev/bossjones-github/scarlett_os -i -t --rm jhbuild_pygobject3 who
-
 # source: https://github.com/inspirehep/inspire-next/blob/9700274c36074a3e43168bf48b8ba3e3bfa7bcdf/.travis.yml
 after_script:
   # Killing via SIGTERM in order to trigger atexit and dump coverage information in WSGI
   - "docker-compose -f docker-compose.yml kill -s SIGTERM"
-  - "docker-compose -f docker-compose.yml rm -f"
+  # - "docker-compose -f docker-compose.yml rm -f"
 
