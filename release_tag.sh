@@ -14,4 +14,4 @@ SHA=$(echo $ID | cut -d\: -f2)
 echo $ID
 echo $SHA
 docker tag $ID bossjones/boss-docker-jhbuild-pygobject3:$TAG_VERSION
-# docker push bossjones/boss-docker-jhbuild-pygobject3:$TAG_VERSION
+docker push bossjones/boss-docker-jhbuild-pygobject3:$TAG_VERSION
