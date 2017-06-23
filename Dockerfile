@@ -14,8 +14,16 @@ ENV PATH /usr/local/bin:/usr/local/sbin:$PATH
 
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
-ENV USER "pi"
-ENV USER_HOME "/home/${USER}"
+
+# FIXME: DO NOT SET env var USER
+ENV UNAME "pi"
+
+# /home/pi
+ENV USER_HOME "/home/${UNAME}"
+
+# /home/pi/dev
+ENV PROJECT_HOME "/home/${UNAME}/dev"
+
 ENV LANG C.UTF-8
 ENV SKIP_ON_TRAVIS yes
 ENV CURRENT_DIR $(pwd)
@@ -25,18 +33,42 @@ ENV ENABLE_GTK yes
 ENV PYTHON_VERSION_MAJOR 3
 ENV PYTHON_VERSION 3.5
 ENV CFLAGS "-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer"
-ENV MAKEFLAGS "-j4"
+ENV MAKEFLAGS "-j4 V=1"
+
+# /home/pi/jhbuild
 ENV PREFIX "${USER_HOME}/jhbuild"
+
+# /home/pi/gnome
 ENV JHBUILD "${USER_HOME}/gnome"
+
+# /home/pi/.virtualenvs
+ENV PATH_TO_DOT_VIRTUALENV "${USER_HOME}/.virtualenvs"
+
+# /home/pi/jhbuild/bin:/home/pi/jhbuild/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV PATH ${PREFIX}/bin:${PREFIX}/sbin:${PATH}
+
+# /home/pi/.virtualenvs/scarlett_os/lib
 ENV LD_LIBRARY_PATH ${PREFIX}/lib:${LD_LIBRARY_PATH}
+
+# /home/pi/jhbuild/lib/python3.5/site-packages:/usr/lib/python3.5/site-packages
 ENV PYTHONPATH ${PREFIX}/lib/python${PYTHON_VERSION}/site-packages:/usr/lib/python${PYTHON_VERSION}/site-packages
+
+# /home/pi/.virtualenvs/scarlett_os/lib/pkgconfig
 ENV PKG_CONFIG_PATH ${PREFIX}/lib/pkgconfig:${PREFIX}/share/pkgconfig:/usr/lib/pkgconfig
+
+# /home/pi/jhbuild/share:/usr/share
 ENV XDG_DATA_DIRS ${PREFIX}/share:/usr/share
+
+# /home/pi/jhbuild/etc/xdg
 ENV XDG_CONFIG_DIRS ${PREFIX}/etc/xdg
+
 ENV PYTHON "python3"
+ENV TERM xterm
 ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
+
+# FIXME: required for jhbuild( sudo apt-get install docbook-xsl build-essential git-core python-libxml2 )
+# source: https://wiki.gnome.org/HowDoI/Jhbuild
 
 RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
@@ -169,6 +201,17 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         libllvm3.8 \
                         libsoundtouch-dev \
                         libsoundtouch1 \
+                        # For general debugging
+                        gdb \
+                        strace \
+                        lsof \
+                        ltrace \
+                        yelp-xsl \
+                        docbook-xsl \
+                        docbook-xsl-doc-html \
+                        python-libxslt1 \
+                        libxslt1-dev \
+                        graphviz \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
          apt-get clean && \
@@ -177,52 +220,106 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
          rm -rf /var/lib/{cache,log}/ && \
          rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
-
+# virtualenv stuff
 ENV VIRTUALENVWRAPPER_PYTHON '/usr/local/bin/python3'
 ENV VIRTUALENVWRAPPER_VIRTUALENV '/usr/local/bin/virtualenv'
 ENV VIRTUALENV_WRAPPER_SH '/usr/local/bin/virtualenvwrapper.sh'
 
+# Ensure that Python outputs everything that's printed inside
+# the application rather than buffering it.
+ENV PYTHONUNBUFFERED 1
 ENV PYTHON_VERSION_MAJOR "3"
 ENV GSTREAMER "1.0"
 ENV USER "pi"
-ENV USER_HOME "/home/${USER}"
+ENV USER_HOME "/home/${UNAME}"
 ENV LANGUAGE_ID 1473
 ENV GITHUB_BRANCH "master"
 ENV GITHUB_REPO_NAME "scarlett_os"
 ENV GITHUB_REPO_ORG "bossjones"
 ENV PI_HOME "/home/pi"
+
+# /home/pi/dev/bossjones-github/scarlett_os
 ENV MAIN_DIR "${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME}"
+
+# /home/pi/.virtualenvs/scarlett_os
 ENV VIRT_ROOT "${PI_HOME}/.virtualenvs/${GITHUB_REPO_NAME}"
+
+# /home/pi/.virtualenvs/scarlett_os/lib/pkgconfig
 ENV PKG_CONFIG_PATH "${PI_HOME}/.virtualenvs/${GITHUB_REPO_NAME}/lib/pkgconfig"
+
+# /home/pi/dev/bossjones-github/scarlett_os/tests/fixtures/.scarlett
 ENV SCARLETT_CONFIG "${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME}/tests/fixtures/.scarlett"
-ENV SCARLETT_HMM "${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME}/.virtualenvs/${GITHUB_REPO_NAME}/share/pocketsphinx/model/en-us/en-us"
-ENV SCARLETT_LM "${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME}/tests/fixtures/lm/${LANGUAGE_ID}.lm"
-ENV SCARLETT_DICT "${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME}/tests/fixtures/dict/${LANGUAGE_ID}.dic"
+
+# /home/pi/dev/bossjones-github/scarlett_os/static/speech/hmm/en_US/hub4wsj_sc_8k
+ENV SCARLETT_HMM "${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME}/static/speech/hmm/en_US/hub4wsj_sc_8k"
+
+# /home/pi/dev/bossjones-github/scarlett_os/static/speech/lm/1473.lm
+ENV SCARLETT_LM "${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME}/static/speech/lm/${LANGUAGE_ID}.lm"
+
+# /home/pi/dev/bossjones-github/scarlett_os/static/speech/dict/1473.dic
+ENV SCARLETT_DICT "${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME}/static/speech/dict/${LANGUAGE_ID}.dic"
+
+# /home/pi/.virtualenvs/repoduce_pytest_mock_issue_84/lib
 ENV LD_LIBRARY_PATH "${PI_HOME}/.virtualenvs/${GITHUB_REPO_NAME}/lib"
+
+# /home/pi/.virtualenvs/scarlett_os/lib/gstreamer-1.0
 ENV GST_PLUGIN_PATH "${PI_HOME}/.virtualenvs/${GITHUB_REPO_NAME}/lib/gstreamer-${GSTREAMER}"
 ENV PYTHON "/usr/local/bin/python3"
 ENV PYTHON_VERSION "3.5"
 ENV VIRTUALENVWRAPPER_PYTHON "/usr/local/bin/python3"
 ENV VIRTUALENVWRAPPER_VIRTUALENV "/usr/local/bin/virtualenv"
 ENV VIRTUALENVWRAPPER_SCRIPT "/usr/local/bin/virtualenvwrapper.sh"
+
+# /home/pi/.pythonrc
 ENV PYTHONSTARTUP "${USER_HOME}/.pythonrc"
 ENV PIP_DOWNLOAD_CACHE "${USER_HOME}/.pip/cache"
+
+# /home/pi/.virtualenvs/scarlett_os
 ENV WORKON_HOME "${VIRT_ROOT}"
 
+############################[BEGIN - USER]##############################################
 RUN set -xe \
-    && useradd -U -d ${PI_HOME} -m -r -G adm,sudo,dip,plugdev,tty,audio ${USER} \
-    && usermod -a -G ${USER} ${USER} \
+    && useradd -U -d ${PI_HOME} -m -r -G adm,sudo,dip,plugdev,tty,audio ${UNAME} \
+    && usermod -a -G ${UNAME} ${UNAME} \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME} \
     && mkdir -p ${MAIN_DIR} \
-    && chown -hR ${USER}:${USER} ${MAIN_DIR} \
+    && chown -hR ${UNAME}:${UNAME} ${MAIN_DIR} \
     && echo 'pi     ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && echo '%pi     ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && cat /etc/sudoers
 
-USER pi
+USER $UNAME
 
-WORKDIR /home/pi
+WORKDIR /home/$UNAME
+
+ENV HOME "/home/$UNAME"
+############################[END - USER]################################################
+
+# ENV UNAME pacat
+
+# RUN apt-get update \
+#  && DEBIAN_FRONTEND=noninteractive apt-get install --yes pulseaudio-utils
+
+# # Set up the user
+# RUN export UNAME=$UNAME UID=1000 GID=1000 && \
+#     mkdir -p "/home/${UNAME}" && \
+#     echo "${UNAME}:x:${UID}:${GID}:${UNAME} User,,,:/home/${UNAME}:/bin/bash" >> /etc/passwd && \
+#     echo "${UNAME}:x:${UID}:" >> /etc/group && \
+#     mkdir -p /etc/sudoers.d && \
+#     echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${UNAME} && \
+#     chmod 0440 /etc/sudoers.d/${UNAME} && \
+#     chown ${UID}:${GID} -R /home/${UNAME} && \
+#     gpasswd -a ${UNAME} audio
+
+# COPY pulse-client.conf /etc/pulse/client.conf
+
+# USER $UNAME
+# ENV HOME /home/pacat
+
+# # run
+# CMD ["pacat", "-vvvv", "/dev/urandom"]
+
 
 # Create a basic .jhbuildrc
 RUN echo "import os"                                   > /home/pi/.jhbuildrc && \
@@ -231,6 +328,7 @@ RUN echo "import os"                                   > /home/pi/.jhbuildrc && 
     echo "moduleset = 'gnome-world'"                  >> /home/pi/.jhbuildrc && \
     echo "interact = False"                           >> /home/pi/.jhbuildrc && \
     echo "makeargs = '$MAKEFLAGS'"                  >> /home/pi/.jhbuildrc && \
+    echo "module_autogenargs['gtk-doc'] = 'PYTHON=/usr/bin/python3'" >> /home/pi/.jhbuildrc && \
     echo "os.environ['CFLAGS'] = '$CFLAGS'"         >> /home/pi/.jhbuildrc && \
     echo "os.environ['PYTHON'] = 'python$PYTHON_VERSION_MAJOR'"           >> /home/pi/.jhbuildrc && \
     echo "os.environ['GSTREAMER'] = '1.0'"            >> /home/pi/.jhbuildrc && \
@@ -238,7 +336,7 @@ RUN echo "import os"                                   > /home/pi/.jhbuildrc && 
     echo "os.environ['ENABLE_GTK'] = 'yes'"           >> /home/pi/.jhbuildrc && \
     echo "os.environ['PYTHON_VERSION'] = '$PYTHON_VERSION'"       >> /home/pi/.jhbuildrc && \
     echo "os.environ['CFLAGS'] = '-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['MAKEFLAGS'] = '-j4'"            >> /home/pi/.jhbuildrc && \
+    echo "os.environ['MAKEFLAGS'] = '-j4 V=1'"            >> /home/pi/.jhbuildrc && \
     echo "os.environ['PREFIX'] = '$USER_HOME/jhbuild'"   >> /home/pi/.jhbuildrc && \
     echo "os.environ['JHBUILD'] = '$USER_HOME/gnome'"    >> /home/pi/.jhbuildrc && \
     echo "os.environ['PATH'] = '$PREFIX/bin:$PREFIX/sbin:$PATH'" >> /home/pi/.jhbuildrc && \
@@ -255,6 +353,7 @@ RUN echo "import os"                                   > /home/pi/.jhbuildrc && 
     echo "os.environ['PYTHONSTARTUP'] = '$USER_HOME/.pythonrc'"                              >> /home/pi/.jhbuildrc && \
     echo "os.environ['PIP_DOWNLOAD_CACHE'] = '$USER_HOME/.pip/cache'"                        >> /home/pi/.jhbuildrc && \
     cat /home/pi/.jhbuildrc
+
 
 # jhbuild
 RUN mkdir -p /home/pi/gnome && \
@@ -295,7 +394,7 @@ RUN mkdir -p /home/pi/gnome && \
     cd /home/pi/gnome && \
     cd pygobject && \
     git checkout fb1b8fa8a67f2c7ea7ad4b53076496a8f2b4afdb && \
-    jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild --with-python=python3 > /dev/null && \
+    jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild --with-python=$(which python3) > /dev/null && \
     jhbuild run make install > /dev/null && \
 
     echo "****************[GSTREAMER]****************" && \
@@ -303,7 +402,7 @@ RUN mkdir -p /home/pi/gnome && \
     curl -L "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.8.2.tar.xz" > gstreamer-1.8.2.tar.xz && \
     tar -xJf gstreamer-1.8.2.tar.xz && \
     cd gstreamer-1.8.2 && \
-    jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \
+    jhbuild run ./configure --enable-doc-installation=no --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
 
@@ -345,6 +444,7 @@ RUN mkdir -p /home/pi/gnome && \
 
     echo "****************[GST-PLUGINS-BAD]****************" && \
     cat /home/pi/jhbuild/bin/gdbus-codegen && \
+    export BOSSJONES_PATH_TO_PYTHON=$(which python3) && \
     sed -i "s,#!python3,#!/usr/bin/python3,g" /home/pi/jhbuild/bin/gdbus-codegen && \
     cat /home/pi/jhbuild/bin/gdbus-codegen && \
     cd /home/pi/gnome && \
@@ -394,13 +494,22 @@ RUN mkdir -p /home/pi/gnome && \
     jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run make clean all > /dev/null && \
-    jhbuild run make install > /dev/null
+    jhbuild run make install > /dev/null && \
+
+    echo "****************[GDBINIT]****************" && \
+    sudo zcat /usr/share/doc/python3.5/gdbinit.gz > /home/pi/.gdbinit && \
+    sudo chown pi:pi /home/pi/.gdbinit && \
+
+    echo "****************[GSTREAMER-COMPLETION]****************" && \
+    curl -L 'https://raw.githubusercontent.com/drothlis/gstreamer/bash-completion-master/tools/gstreamer-completion' | sudo tee -a /etc/bash_completion.d/gstreamer-completion && \
+    sudo chown root:root /etc/bash_completion.d/gstreamer-completion
+
 
 
 # Overlay the root filesystem from this repo
 COPY ./container/root /
 
-RUN goss -g /tests/goss.jhbuild.yaml validate
+RUN goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
 
 # NOTE: intentionally NOT using s6 init as the entrypoint
 # This would prevent container debugging if any of those service crash
