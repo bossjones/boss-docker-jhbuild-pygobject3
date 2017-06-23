@@ -1,0 +1,38 @@
+#!/usr/bin/execlineb -P
+foreground { s6-mkdir -p -m 750 /var/run/sshd }
+fdmove -c 2 1
+if { /usr/sbin/sshd -t }
+/usr/sbin/sshd -D -e
+
+
+# FIXME: DO WE NEED THIS?
+# source: https://github.com/jdeblese/s6-services/blob/68cdba1e8606e3df58acff7fad48c42491cd6dd5/sshd/run
+# fdmove -c 2 1
+#
+# multisubstitute {
+#   define CMD /usr/sbin/sshd
+#   define CONFIG /etc/ssh
+#   define KEYGEN /usr/bin/ssh-keygen
+# }
+#
+# foreground {
+#   if { test ! -r ${CONFIG}/ssh_host_key }
+#     ${KEYGEN} -t rsa1 -f ${CONFIG}/ssh_host_key -N ""
+# }
+#
+# foreground {
+#   if { test ! -f ${CONFIG}/ssh_host_dsa_key }
+#     ${KEYGEN} -t dsa -f ${CONFIG}/ssh_host_dsa_key -N ""
+# }
+#
+# foreground {
+#   if { test ! -f ${CONFIG}/ssh_host_rsa_key }
+#     ${KEYGEN} -t rsa -f ${CONFIG}/ssh_host_rsa_key -N ""
+# }
+#
+# foreground {
+#   if { test ! -f ${CONFIG}/ssh_host_ecdsa_key }
+#     ${KEYGEN} -t ecdsa -f ${CONFIG}/ssh_host_ecdsa_key -N ""
+# }
+#
+# ${CMD} -D -e

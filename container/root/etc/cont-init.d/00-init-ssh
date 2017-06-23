@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# SOURCE: https://github.com/psmb/docker-neos-alpine/blob/758b1674268b1a0c5ab7698b6134b95e810f480b/root/etc/cont-init.d/00-init-ssh
+
+set -e
+
+# Generate SSH host keys on container (re)start if they're not present
+[ -f /etc/ssh/ssh_host_rsa_key ] || ssh-keygen -q -b 1024 -N '' -t rsa -f /etc/ssh/ssh_host_rsa_key
+[ -f /etc/ssh/ssh_host_dsa_key ] || ssh-keygen -q -b 1024 -N '' -t dsa -f /etc/ssh/ssh_host_dsa_key
+[ -f /etc/ssh/ssh_host_ecdsa_key ] || ssh-keygen -q -b 521  -N '' -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
+[ -f /etc/ssh/ssh_host_ed25519_key ] || ssh-keygen -q -b 1024 -N '' -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
+

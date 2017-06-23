@@ -4,6 +4,14 @@ MAINTAINER Malcolm Jones <bossjones@theblacktonystark.com>
 # Prepare packaging environment
 ENV DEBIAN_FRONTEND noninteractive
 
+# Install language pack before setting env vars to utf-8
+RUN \
+  apt-get update && \
+  apt-get -y upgrade && \
+  apt-get install -y \
+ 	language-pack-en-base && \
+  rm -rf /var/lib/apt/lists/*
+
 # # Ensure UTF-8 lang and locale
 RUN locale-gen en_US.UTF-8
 ENV LANG       en_US.UTF-8
@@ -66,6 +74,27 @@ ENV PYTHON "python3"
 ENV TERM xterm
 ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
+
+# NOTE: Couple other things to install for future, like valgrind etc
+# source: https://github.com/avranju/docker-linux-dev-image/blob/master/Dockerfile.template
+# RUN apt-get clean && \
+#     apt-get update && \
+#     apt-get install -y \
+#         software-properties-common \
+#         python2.7 \
+#         curl \
+#         build-essential \
+#         libcurl4-openssl-dev \
+#         git \
+#         cmake \
+#         libssl-dev \
+#         uuid-dev \
+#         valgrind \
+#         libglib2.0-dev \
+#         gdb \
+#         gdbserver \
+#         openssh-server
+
 
 # FIXME: required for jhbuild( sudo apt-get install docbook-xsl build-essential git-core python-libxml2 )
 # source: https://wiki.gnome.org/HowDoI/Jhbuild
@@ -212,6 +241,7 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         python-libxslt1 \
                         libxslt1-dev \
                         graphviz \
+                        openssh-server \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
          apt-get clean && \
@@ -219,6 +249,24 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
          apt-get autoremove -y && \
          rm -rf /var/lib/{cache,log}/ && \
          rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# NOTE: OPENSSH-SERVER FIXES STUFF
+# source: https://docs.docker.com/engine/examples/running_ssh_service/
+# RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
+    sed -i -r 's/.?UseDNS\syes/UseDNS no/' /etc/ssh/sshd_config && \
+    sed -i -r 's/.?PasswordAuthentication.+/PasswordAuthentication no/' /etc/ssh/sshd_config  && \
+    sed -i -r 's/.?ChallengeResponseAuthentication.+/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config \
+
+# NOTE: It's an example of how to pass environment variables when running a Dockerized SSHD service.
+# NOTE: SSHD scrubs the environment, therefore ENV variables contained in Dockerfile must be pushed to
+# /etc/profile in order for them to be available.
+# source: https://stackoverflow.com/questions/36292317/why-set-visible-now-in-etc-profile
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
 
 # virtualenv stuff
 ENV VIRTUALENVWRAPPER_PYTHON '/usr/local/bin/python3'
@@ -277,17 +325,50 @@ ENV PIP_DOWNLOAD_CACHE "${USER_HOME}/.pip/cache"
 # /home/pi/.virtualenvs/scarlett_os
 ENV WORKON_HOME "${VIRT_ROOT}"
 
+# Vagrant pub key for development
+ENV USER_SSH_PUBKEY "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key"
+
+# Source: https://github.com/ambakshi/dockerfiles/blob/09a05ceab3b5a93c974783ad27a8a6301f3c4ca2/devbox/debian8/Dockerfile
+RUN echo "[ \$UID -eq 0 ] && PS1='\[\e[31m\]\h:\w#\[\e[m\] ' || PS1='[\[\033[32m\]\u@\h\[\033[00m\] \[\033[36m\]\W\[\033[31m\]\$(__git_ps1)\[\033[00m\]] \$ '"  | tee /etc/bash_completion.d/prompt
+
+# FIXME: Do we need this???
+# source: https://github.com/ambakshi/dockerfiles/blob/09a05ceab3b5a93c974783ad27a8a6301f3c4ca2/devbox/ub14/Dockerfile
+# ## Fix up some settings to allow sudo/su without docker's terminal
+# RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd && \
+#     sed -i 's@session\s*include\s*system-auth$@session optional system-auth@g' /etc/pam.d/su && \
+#     sed -i 's@^Defaults\([ ]*\)requiretty$@#Defaults\1requiretty@g' /etc/sudoers
+# RUN sed -i -e 's/^GSSAPIAuthentication.*$/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
+# RUN sed -i -e 's/^#UseDNS.*$/UseDNS no/g' /etc/ssh/sshd_config
+# RUN sed -i -e 's/^#X11UseLocalhost.*$/X11UseLocalhost no/g' /etc/ssh/sshd_config
+# RUN sed -i -e 's/^#AddressFamily.*$/AddressFamily inet/g' /etc/ssh/sshd_config
+# RUN rm -f /etc/ssh/ssh_host* && ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N "" && ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ""
+# RUN mkdir -p -m 0700 /root/.ssh && touch /root/.ssh/authorized_keys && chmod 0600 /root/.ssh/authorized_keys
+# RUN groupadd -f -r wheel
+# RUN groupadd -g 1000 vagrant && useradd -u 1000 -g vagrant -m -s /bin/bash vagrant && gpasswd --add vagrant wheel
+
 ############################[BEGIN - USER]##############################################
+# FIXME: investigate secure_path: http://manpages.ubuntu.com/manpages/zesty/man5/sudoers.5.html
+# NOTE: umask 077 -> allow read, write, and execute permission for the file's owner, but prohibit read, write, and execute permission for everyone else
+# NOTE: The file mode creation mask is initialized to this value. If not specified, the mask will be initialized to 022.
+# Source: http://manpages.ubuntu.com/manpages/xenial/man8/useradd.8.html
+# FIXME: Look at this guy: https://hub.docker.com/r/radmas/mtc-plus-fpm/~/dockerfile/
 RUN set -xe \
     && useradd -U -d ${PI_HOME} -m -r -G adm,sudo,dip,plugdev,tty,audio ${UNAME} \
     && usermod -a -G ${UNAME} ${UNAME} \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME} \
     && mkdir -p ${MAIN_DIR} \
+    && ( \
+        umask 077 \
+        && mkdir ${PI_HOME}/.ssh \
+        && echo "${USER_SSH_PUBKEY}" \
+            > ${PI_HOME}/.ssh/authorized_keys \
+    ) \
     && chown -hR ${UNAME}:${UNAME} ${MAIN_DIR} \
     && echo 'pi     ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && echo '%pi     ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
-    && cat /etc/sudoers
+    && cat /etc/sudoers && \
+    echo 'pi:raspberry' | chpasswd
 
 USER $UNAME
 
@@ -504,7 +585,8 @@ RUN mkdir -p /home/pi/gnome && \
     curl -L 'https://raw.githubusercontent.com/drothlis/gstreamer/bash-completion-master/tools/gstreamer-completion' | sudo tee -a /etc/bash_completion.d/gstreamer-completion && \
     sudo chown root:root /etc/bash_completion.d/gstreamer-completion
 
-
+# Expose port for ssh
+EXPOSE 22
 
 # Overlay the root filesystem from this repo
 COPY ./container/root /

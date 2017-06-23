@@ -1,0 +1,7 @@
+#!/command/execlineb -P
+
+# source: https://github.com/jdeblese/s6-services/blob/68cdba1e8606e3df58acff7fad48c42491cd6dd5/sshd/finish
+# Do not execute a killall sshd here, as we may still need active
+# ssh sessions, for instance when restarting sshd remotely
+
+rm -f /var/run/sshd.pid
