@@ -589,8 +589,6 @@ RUN bash /prep-pi.sh
 
 # NOTE: intentionally NOT using s6 init as the entrypoint
 # This would prevent container debugging if any of those service crash
-# ENTRYPOINT ["/run-shim.sh"]
+
 CMD ["/bin/bash", "/run.sh"]
 
-
-# CMD true
