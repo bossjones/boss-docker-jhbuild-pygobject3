@@ -1,2 +1,9 @@
 *.term
 sshd_log.txt
+.DS_Store
+.travis.yml
+.git
+.gitignore
+LICENSE
+README.md
+contributing.md

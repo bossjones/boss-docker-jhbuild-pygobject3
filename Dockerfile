@@ -104,161 +104,6 @@ ENV CC gcc
 # FIXME: required for jhbuild( sudo apt-get install docbook-xsl build-essential git-core python-libxml2 )
 # source: https://wiki.gnome.org/HowDoI/Jhbuild
 
-# RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
-#     dpkg-reconfigure -f noninteractive tzdata && \
-#     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-#     echo 'LANG="en_US.UTF-8"' > /etc/default/locale && \
-#     dpkg-reconfigure -f noninteractive locales && \
-#     update-locale LANG=en_US.UTF-8 && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted' | tee /etc/apt/sources.list && \
-#     echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial main restricted' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted' | tee -a /etc/apt/sources.list && \
-#     echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial universe' | tee -a /etc/apt/sources.list && \
-#     echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial universe' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates universe' | tee -a /etc/apt/sources.list && \
-#     echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates universe' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-security main restricted' | tee -a /etc/apt/sources.list && \
-#     echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-security main restricted' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-security universe' | tee -a /etc/apt/sources.list && \
-#     echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-security universe' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial multiverse' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates multiverse' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://security.ubuntu.com/ubuntu xenial-security main restricted' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://security.ubuntu.com/ubuntu xenial-security main restricted' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://security.ubuntu.com/ubuntu xenial-security universe' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse' | tee -a /etc/apt/sources.list && \
-#     echo 'deb http://security.ubuntu.com/ubuntu xenial-security multiverse' | tee -a /etc/apt/sources.list && \
-#     cat /etc/apt/sources.list | grep -v "^#" | sort -u > /etc/apt/sources.list.bak && \
-#     mv -fv /etc/apt/sources.list.bak /etc/apt/sources.list && \
-#     add-apt-repository -y ppa:ricotz/testing && \
-#     add-apt-repository -y ppa:gnome3-team/gnome3 && \
-#     add-apt-repository -y ppa:gnome3-team/gnome3-staging && \
-#     add-apt-repository -y ppa:pitti/systemd-semaphore && \
-#     apt-get update -yqq && \
-#     apt-get upgrade -yqq && \
-#     export LANG=en_US.UTF-8 && \
-#     apt-get install -qqy libpulse-dev espeak && \
-#     apt-cache search --names-only '^(lib)?gstreamer1.0\S*' | sed 's/\(.*\) -.*/\1 /' | grep -iv "Speech"  > dependencies && \
-#     cat dependencies && \
-#     apt-get build-dep -y `cat dependencies` && \
-#     apt-get install -qqy gnome-common \
-#                         gtk-doc-tools \
-#                         libgtk-3-dev \
-#                         libgirepository1.0-dev \
-#                         yelp-tools \
-#                         libgladeui-dev \
-#                         python3-dev \
-#                         python3-cairo-dev \
-#                         python3-gi \
-#                         automake \
-#                         autopoint \
-#                         bison \
-#                         build-essential \
-#                         byacc \
-#                         flex \
-#                         gcc \
-#                         automake \
-#                         autoconf \
-#                         libtool \
-#                         bison \
-#                         swig \
-#                         python-dev \
-#                         libpulse-dev \
-#                         gettext \
-#                         gnome-common \
-#                         gtk-doc-tools \
-#                         libgtk-3-dev \
-#                         libgirepository1.0-dev \
-#                         python3-gi-cairo \
-#                         yasm \
-#                         nasm \
-#                         bison \
-#                         flex \
-#                         libusb-1.0-0-dev \
-#                         libgudev-1.0-dev \
-#                         libxv-dev \
-#                         build-essential \
-#                         autotools-dev \
-#                         automake \
-#                         autoconf \
-#                         libtool \
-#                         binutils \
-#                         autopoint \
-#                         libxml2-dev \
-#                         zlib1g-dev \
-#                         libglib2.0-dev \
-#                         pkg-config \
-#                         flex \
-#                         python \
-#                         libasound2-dev \
-#                         libgudev-1.0-dev \
-#                         libxt-dev \
-#                         libvorbis-dev \
-#                         libcdparanoia-dev \
-#                         libpango1.0-dev \
-#                         libtheora-dev \
-#                         libvisual-0.4-dev \
-#                         iso-codes \
-#                         libgtk-3-dev \
-#                         libraw1394-dev \
-#                         libiec61883-dev \
-#                         libavc1394-dev \
-#                         libv4l-dev \
-#                         libcairo2-dev \
-#                         libcaca-dev \
-#                         libspeex-dev \
-#                         libpng-dev \
-#                         libshout3-dev \
-#                         libjpeg-dev \
-#                         libaa1-dev \
-#                         libflac-dev \
-#                         libdv4-dev \
-#                         libtag1-dev \
-#                         libwavpack-dev \
-#                         libpulse-dev \
-#                         gstreamer1.0* \
-#                         lame \
-#                         flac \
-#                         libfftw3-dev \
-#                         xvfb \
-#                         gir1.2-gtk-3.0 \
-#                         xsltproc \
-#                         docbook-xml \
-#                         docbook-xsl \
-#                         python-libxml2 \
-#                         sudo \
-#                         # begin - gst-plugins-bad req
-#                         libqt4-opengl \
-#                         libdvdread4 \
-#                         libdvdnav4 \
-#                         libllvm3.8 \
-#                         libsoundtouch-dev \
-#                         libsoundtouch1 \
-#                         # For general debugging
-#                         gdb \
-#                         strace \
-#                         lsof \
-#                         ltrace \
-#                         yelp-xsl \
-#                         docbook-xsl \
-#                         docbook-xsl-doc-html \
-#                         python-libxslt1 \
-#                         libxslt1-dev \
-#                         graphviz \
-#                         openssh-server \
-#                         # end gst-plugins-bad req
-#                         ubuntu-restricted-extras && \
-#          apt-get clean && \
-#          apt-get autoclean -y && \
-#          apt-get autoremove -y && \
-#          rm -rf /var/lib/{cache,log}/ && \
-#          rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
-
-# NOTE: OPENSSH-SERVER FIXES STUFF
-# source: https://docs.docker.com/engine/examples/running_ssh_service/
-# RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-
 RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
@@ -286,31 +131,131 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
     echo 'deb http://security.ubuntu.com/ubuntu xenial-security multiverse' | tee -a /etc/apt/sources.list && \
     cat /etc/apt/sources.list | grep -v "^#" | sort -u > /etc/apt/sources.list.bak && \
     mv -fv /etc/apt/sources.list.bak /etc/apt/sources.list && \
+    add-apt-repository -y ppa:ricotz/testing && \
+    add-apt-repository -y ppa:gnome3-team/gnome3 && \
+    add-apt-repository -y ppa:gnome3-team/gnome3-staging && \
+    add-apt-repository -y ppa:pitti/systemd-semaphore && \
     apt-get update -yqq && \
     apt-get upgrade -yqq && \
     export LANG=en_US.UTF-8 && \
-    apt-get install -qqy gdb \
+    apt-get install -qqy libpulse-dev espeak && \
+    apt-cache search --names-only '^(lib)?gstreamer1.0\S*' | sed 's/\(.*\) -.*/\1 /' | grep -iv "Speech"  > dependencies && \
+    cat dependencies && \
+    apt-get build-dep -y `cat dependencies` && \
+    apt-get install -qqy gnome-common \
+                        gtk-doc-tools \
+                        libgtk-3-dev \
+                        libgirepository1.0-dev \
+                        yelp-tools \
+                        libgladeui-dev \
+                        python3-dev \
+                        python3-cairo-dev \
+                        python3-gi \
+                        automake \
+                        autopoint \
+                        bison \
+                        build-essential \
+                        byacc \
+                        flex \
+                        gcc \
+                        automake \
+                        autoconf \
+                        libtool \
+                        bison \
+                        swig \
+                        python-dev \
+                        libpulse-dev \
+                        gettext \
+                        gnome-common \
+                        gtk-doc-tools \
+                        libgtk-3-dev \
+                        libgirepository1.0-dev \
+                        python3-gi-cairo \
+                        yasm \
+                        nasm \
+                        bison \
+                        flex \
+                        libusb-1.0-0-dev \
+                        libgudev-1.0-dev \
+                        libxv-dev \
+                        build-essential \
+                        autotools-dev \
+                        automake \
+                        autoconf \
+                        libtool \
+                        binutils \
+                        autopoint \
+                        libxml2-dev \
+                        zlib1g-dev \
+                        libglib2.0-dev \
+                        pkg-config \
+                        flex \
+                        python \
+                        libasound2-dev \
+                        libgudev-1.0-dev \
+                        libxt-dev \
+                        libvorbis-dev \
+                        libcdparanoia-dev \
+                        libpango1.0-dev \
+                        libtheora-dev \
+                        libvisual-0.4-dev \
+                        iso-codes \
+                        libgtk-3-dev \
+                        libraw1394-dev \
+                        libiec61883-dev \
+                        libavc1394-dev \
+                        libv4l-dev \
+                        libcairo2-dev \
+                        libcaca-dev \
+                        libspeex-dev \
+                        libpng-dev \
+                        libshout3-dev \
+                        libjpeg-dev \
+                        libaa1-dev \
+                        libflac-dev \
+                        libdv4-dev \
+                        libtag1-dev \
+                        libwavpack-dev \
+                        libpulse-dev \
+                        gstreamer1.0* \
+                        lame \
+                        flac \
+                        libfftw3-dev \
+                        xvfb \
+                        gir1.2-gtk-3.0 \
+                        xsltproc \
+                        docbook-xml \
+                        docbook-xsl \
+                        python-libxml2 \
                         sudo \
-                        openssh-server && \
+                        # begin - gst-plugins-bad req
+                        libqt4-opengl \
+                        libdvdread4 \
+                        libdvdnav4 \
+                        libllvm3.8 \
+                        libsoundtouch-dev \
+                        libsoundtouch1 \
+                        # For general debugging
+                        gdb \
+                        strace \
+                        lsof \
+                        ltrace \
+                        yelp-xsl \
+                        docbook-xsl \
+                        docbook-xsl-doc-html \
+                        python-libxslt1 \
+                        libxslt1-dev \
+                        graphviz \
+                        openssh-server \
+                        # end gst-plugins-bad req
+                        ubuntu-restricted-extras && \
          apt-get clean && \
          apt-get autoclean -y && \
          apt-get autoremove -y && \
          rm -rf /var/lib/{cache,log}/ && \
          rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
-# FIXME: En
-###### ##########################################################################################
-###### RUN apt-get update && apt-get install -y openssh-server
-###### RUN mkdir /var/run/sshd
-###### RUN echo 'root:screencast' | chpasswd
-###### RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-######
-###### # SSH login fix. Otherwise user is kicked off after login
-###### RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-######
-###### ENV NOTVISIBLE "in users profile"
-###### RUN echo "export VISIBLE=now" >> /etc/profile
-###### ##########################################################################################
+# source: https://docs.docker.com/engine/examples/running_ssh_service/
 
 # SSH login fix. Otherwise user is kicked off after login
 RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd \
@@ -324,7 +269,6 @@ RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid
 # source: https://stackoverflow.com/questions/36292317/why-set-visible-now-in-etc-profile
 ENV NOTVISIBLE "in users profile"
 RUN echo 'export VISIBLE=now' >> /etc/profile
-
 
 # virtualenv stuff
 ENV VIRTUALENVWRAPPER_PYTHON '/usr/local/bin/python3'
@@ -388,21 +332,6 @@ ENV USER_SSH_PUBKEY "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtv
 
 # Source: https://github.com/ambakshi/dockerfiles/blob/09a05ceab3b5a93c974783ad27a8a6301f3c4ca2/devbox/debian8/Dockerfile
 RUN echo "[ \$UID -eq 0 ] && PS1='\[\e[31m\]\h:\w#\[\e[m\] ' || PS1='[\[\033[32m\]\u@\h\[\033[00m\] \[\033[36m\]\W\[\033[31m\]\$(__git_ps1)\[\033[00m\]] \$ '"  | tee /etc/bash_completion.d/prompt
-
-# FIXME: Do we need this???
-# source: https://github.com/ambakshi/dockerfiles/blob/09a05ceab3b5a93c974783ad27a8a6301f3c4ca2/devbox/ub14/Dockerfile
-# ## Fix up some settings to allow sudo/su without docker's terminal
-# RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd && \
-#     sed -i 's@session\s*include\s*system-auth$@session optional system-auth@g' /etc/pam.d/su && \
-#     sed -i 's@^Defaults\([ ]*\)requiretty$@#Defaults\1requiretty@g' /etc/sudoers
-# RUN sed -i -e 's/^GSSAPIAuthentication.*$/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
-# RUN sed -i -e 's/^#UseDNS.*$/UseDNS no/g' /etc/ssh/sshd_config
-# RUN sed -i -e 's/^#X11UseLocalhost.*$/X11UseLocalhost no/g' /etc/ssh/sshd_config
-# RUN sed -i -e 's/^#AddressFamily.*$/AddressFamily inet/g' /etc/ssh/sshd_config
-# RUN rm -f /etc/ssh/ssh_host* && ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N "" && ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ""
-# RUN mkdir -p -m 0700 /root/.ssh && touch /root/.ssh/authorized_keys && chmod 0600 /root/.ssh/authorized_keys
-# RUN groupadd -f -r wheel
-# RUN groupadd -g 1000 vagrant && useradd -u 1000 -g vagrant -m -s /bin/bash vagrant && gpasswd --add vagrant wheel
 
 ############################[BEGIN - USER]##############################################
 # FIXME: investigate secure_path: http://manpages.ubuntu.com/manpages/zesty/man5/sudoers.5.html
