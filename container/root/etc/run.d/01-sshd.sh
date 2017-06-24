@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Ensure that worker entrypoint does not also run nginx processes
-if [ $SCARLETT_ENABLE_SSHD == 'True' ]
+if [ $SCARLETT_ENABLE_SSHD ]
 then
 
   echo '[run] enabling sshd'
