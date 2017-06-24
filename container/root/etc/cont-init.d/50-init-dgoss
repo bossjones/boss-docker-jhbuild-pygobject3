@@ -35,3 +35,25 @@ foreground { s6-echo " [run] goss jhbuild tests" }
 # Okay I think this will actually run the tests like the pi user
 su - pi -c "/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s"
 
+######################################################################
+# source: claw-docker-base
+# NOTE: This will overwrite new environment variables you set
+# in here using multiline to the ones the container sees!
+# multisubstitute
+# {
+#   import -D "etcd" ETCD_HOST
+#   import -D "2379" ETCD_HOST_PORT
+#   import -D 0 ETCD_CONNECTION_TIMEOUT
+# }
+# foreground {
+#   with-contenv
+#   s6-env -i
+#   s6-dumpenv -- /var/run/s6/container_environment
+# }
+######################################################################
+
+## Signal build complete if running on ci ##
+if [[ $TRAVIS_CI != true ]]; then
+  echo " [run] finished running jhbuild goss tests ... sending signal complete"
+  exit $SIGNAL_BUILD_STOP
+fi
