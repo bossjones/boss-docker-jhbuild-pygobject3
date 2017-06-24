@@ -7,7 +7,11 @@ jhbuild_pygobject3:
     S6_KILL_GRACETIME: 1
     SERVER_WORKER_PROCESSES: 1
     # NOTE: This enables SSHD access inside of the container for dev purposes
-    SCARLETT_ENABLE_SSHD: "True"
+    # 1 = false
+    # 0 = true
+    SCARLETT_ENABLE_SSHD: 1
+    SCARLETT_ENABLE_DBUS: 1
+    SCARLETT_BUILD_GNOME: 0
   volumes:
    - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
   ports:

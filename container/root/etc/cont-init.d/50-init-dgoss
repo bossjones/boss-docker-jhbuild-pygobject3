@@ -1,7 +1,37 @@
-#!/usr/bin/with-contenv bash
+#!/usr/bin/execlineb -P
 # -*- mode: bash -*-
 # vi: set ft=bash:
 
-echo "[run] goss jhbuild tests"
+foreground { s6-echo " [run] goss jhbuild tests" }
 
-exec s6-setuidgid pi /bin/bash -C 'goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s'
+# FIXME: This is broken for some reason
+# exec s6-setuidgid pi /bin/bash -C '/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s'
+
+# FIXME: This is broken as well
+# exec s6-setuidgid pi /bin/bash -C '/usr/local/bin/goss --help'
+
+# FIXME: Wow so this is busted too, error below
+# exec s6-setuidgid pi /bin/bash -C 'w'
+
+
+# jhbuild_pygobject3_1  |  [run] SCARLETT_BUILD_GNOME not set, moving on ...
+# jhbuild_pygobject3_1  | [cont-init.d] 40-init-jhbuild: exited 0.
+# jhbuild_pygobject3_1  | [cont-init.d] 50-init-dgoss: executing...
+# jhbuild_pygobject3_1  | [run] goss jhbuild tests
+# jhbuild_pygobject3_1  | /usr/bin/who: /usr/bin/who: cannot execute binary file
+# jhbuild_pygobject3_1  | [cont-init.d] 50-init-dgoss: exited 126.
+# jhbuild_pygobject3_1  | [cont-finish.d] executing container finish scripts...
+# jhbuild_pygobject3_1  | [cont-finish.d] done.
+
+# NOTE: Lets try this with execlineb, meaning it'll run as root
+# TODO: Surround this in a conditional to tell us to run the tests or skip them. By default we want them on
+# NOTE: Okay this actually runs, BUT, it errors on 30 items because it isn't running as pi user
+
+# s6-setuidgid pi
+# with-contenv
+# s6-env -i
+# /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
+
+# Okay I think this will actually run the tests like the pi user
+su - pi -c "/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s"
+

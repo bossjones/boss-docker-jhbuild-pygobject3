@@ -153,4 +153,9 @@ curl -L "https://raw.githubusercontent.com/drothlis/gstreamer/bash-completion-ma
 sudo chown root:root /etc/bash_completion.d/gstreamer-completion
 EOF
 
+if [[ $SCARLETT_BUILD_GNOME != true ]]; then
+  echo " [run] SCARLETT_BUILD_GNOME not set, moving on ..."
+  exit
+fi
+
 exec s6-setuidgid pi /bin/bash -C '/tmp/jhbuild_setup.sh'
