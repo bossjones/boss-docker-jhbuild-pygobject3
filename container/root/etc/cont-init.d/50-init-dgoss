@@ -1,0 +1,7 @@
+#!/usr/bin/with-contenv bash
+# -*- mode: bash -*-
+# vi: set ft=bash:
+
+echo "[run] goss jhbuild tests"
+
+exec s6-setuidgid pi /bin/bash -C 'goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s'
