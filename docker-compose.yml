@@ -11,7 +11,7 @@ jhbuild_pygobject3:
     # 0 = true
     SCARLETT_ENABLE_SSHD: 1
     SCARLETT_ENABLE_DBUS: 1
-    SCARLETT_BUILD_GNOME: 0
+    SCARLETT_BUILD_GNOME: 'true'
   volumes:
    - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
   ports:
