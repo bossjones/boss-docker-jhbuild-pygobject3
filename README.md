@@ -111,3 +111,50 @@ confd --onetime --prefix="${CONFD_PREFIX}" --tmpl-uid="${UID}" --tmpl-gid="${GID
 ```
 
 ### [](#writing-a-service-script)
+
+# Caching docker images during builds example
+
+
+## [Caching] Example 1
+**source: https://github.com/travis-ci/travis-ci/issues/5358**
+
+Im doing something like this for 1.13 for images on amazon ECR, but you get the idea.
+
+```
+before_install:
+- sudo apt-get update && sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
+- export REPO=$AWS_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME
+- docker pull $(REPO):$(TRAVIS_BRANCH)
+script:
+- docker build --cache-from $(REPO):$(TRAVIS_BRANCH) -t $(REPO):$(TRAVIS_COMMIT) .
+
+```
+
+Works like a charm.
+
+
+## [Caching] Example 2
+
+I'm always explicitly tagging my images. Maybe that will help.
+
+```
+docker build -t test1 .
+docker tag test1 namespace/test1:latest
+docker push namespace/test1:latest
+```
+
+
+## [Caching] Example 3 ( bump the version of docker up)
+
+FWIW until Travis updates their version, you can update the version of Docker your Travis build is using, e.g. [like this](https://gist.github.com/dylanscott/ea6cff4900c50f4e85a58c01477e9473). Note that I still needed to list the docker service under the services key in .travis.yml, otherwise I was having issues running the docker cli without sudo.
+
+I can confirm that the `--cache-from` feature in 1.13 works wonderfully. It's saving us a ton of build time on a large node app since we avoid `yarn install`ing every build unless `package.json` changes. It's by far the easiest way to take advantage of the docker layer cache that I've seen. Also if it saves anyone any trouble, FYI `--cache-from` does **not** pull the image in question for you. You need to pull it yourself.
+
+
+### [Caching] Example 4
+
+https://gist.github.com/marcbachmann/16574ba8c614bb3b78614a351f324b86
+
+### [Caching] Example 5
+
+http://rundef.com/fast-travis-ci-docker-build

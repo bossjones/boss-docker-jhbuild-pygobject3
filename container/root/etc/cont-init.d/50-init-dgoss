@@ -53,7 +53,7 @@ su - pi -c "/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-tim
 ######################################################################
 
 ## Signal build complete if running on ci ##
-if [[ $TRAVIS_CI != true ]]; then
+if [[ $TRAVIS_CI == true ]]; then
   echo " [run] finished running jhbuild goss tests ... sending signal complete"
   exit $SIGNAL_BUILD_STOP
 fi
