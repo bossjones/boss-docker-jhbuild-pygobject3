@@ -5,3 +5,10 @@
 # ssh sessions, for instance when restarting sshd remotely
 
 rm -f /var/run/sshd.pid
+
+# FIXME: We might need this?
+# "Bring down service only when it crashes"
+# !/usr/bin/execlineb -S1
+# if { s6-test ${1} -ne 0 }
+# if { s6-test ${1} -ne 256 }
+# s6-svscanctl -t /var/run/s6/services
