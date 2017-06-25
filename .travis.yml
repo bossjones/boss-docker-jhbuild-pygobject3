@@ -52,3 +52,9 @@ after_script:
   # Killing via SIGTERM in order to trigger atexit and dump coverage information in WSGI
   - "docker-compose -f docker-compose.yml kill -s SIGTERM"
 
+notifications:
+  email:
+    recipients:
+      - bossjones@theblacktonystark.com
+    on_success: always # default: change
+    on_failure: always # default: always
