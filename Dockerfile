@@ -590,5 +590,11 @@ RUN bash /prep-pi.sh
 # NOTE: intentionally NOT using s6 init as the entrypoint
 # This would prevent container debugging if any of those service crash
 
+# FIXME: Do we need this??
+# PYTHONIOENCODING="UTF-8"
+# UMASK=002
+# EDGE=0
+# source: https://github.com/hurricanehrndz/docker-containers/blob/64fe4f2f0975587a00d180330b19e0aa7596581f/headphones/Dockerfile
+
 CMD ["/bin/bash", "/run.sh"]
 
