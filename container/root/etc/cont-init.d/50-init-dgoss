@@ -48,14 +48,11 @@ multisubstitute
   import -u -D0 NOT_ROOT_USER
   import -u -D0 USER_HOME
   import -u -D0 PROJECT_HOME
-  import -u -D0 LANG
   import -u -D0 SKIP_ON_TRAVIS
   import -u -D0 CURRENT_DIR
   import -u -D0 GSTREAMER
   import -u -D0 ENABLE_PYTHON3
   import -u -D0 ENABLE_GTK
-  import -u -D0 PYTHON_VERSION_MAJOR
-  import -u -D0 PYTHON_VERSION
   import -u -D0 PREFIX
   import -u -D0 JHBUILD
   import -u -D0 PATH
@@ -66,14 +63,11 @@ multisubstitute
   import -u -D0 XDG_CONFIG_DIRS
   import -u -D0 PYTHON
   import -u -D0 NOTVISIBLE
-  import -u -D0 VIRTUALENVWRAPPER_PYTHON
   import -u -D0 VIRTUALENVWRAPPER_VIRTUALENV
   import -u -D0 VIRTUALENV_WRAPPER_SH
   import -u -D0 PYTHONUNBUFFERED
   import -u -D0 PYTHON_VERSION_MAJOR
-  import -u -D0 GSTREAMER
   import -u -D0 USER
-  import -u -D0 USER_HOME
   import -u -D0 LANGUAGE_ID
   import -u -D0 GITHUB_BRANCH
   import -u -D0 GITHUB_REPO_NAME
@@ -81,17 +75,13 @@ multisubstitute
   import -u -D0 PI_HOME
   import -u -D0 MAIN_DIR
   import -u -D0 VIRT_ROOT
-  import -u -D0 PKG_CONFIG_PATH
   import -u -D0 SCARLETT_CONFIG
   import -u -D0 SCARLETT_HMM
   import -u -D0 SCARLETT_LM
   import -u -D0 SCARLETT_DICT
-  import -u -D0 LD_LIBRARY_PATH
   import -u -D0 GST_PLUGIN_PATH
-  import -u -D0 PYTHON
   import -u -D0 PYTHON_VERSION
   import -u -D0 VIRTUALENVWRAPPER_PYTHON
-  import -u -D0 VIRTUALENVWRAPPER_VIRTUALENV
   import -u -D0 VIRTUALENVWRAPPER_SCRIPT
   import -u -D0 PYTHONSTARTUP
   import -u -D0 PIP_DOWNLOAD_CACHE
