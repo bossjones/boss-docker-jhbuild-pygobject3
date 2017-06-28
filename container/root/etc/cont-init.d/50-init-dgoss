@@ -98,7 +98,7 @@ multisubstitute
   importas USER_SSH_PUBKEY USER_SSH_PUBKEY
   importas HOME HOME
   importas XDG_RUNTIME_DIR XDG_RUNTIME_DIR
-  importas SIGNAL_BUILD_STOP
+  importas SIGNAL_BUILD_STOP SIGNAL_BUILD_STOP
 }
 
 foreground { s6-echo " [run] AFTER s6-env -i" }
@@ -110,6 +110,11 @@ foreground {
 }
 
 importas REXIT ?
+
+ifelse { s6-test $REXIT -gt 0 } {
+         foreground { s6-echo " [run] goss had an error lets stop everything" }
+         exit $REXIT
+}
 
 # s6-applyuidgid -u 1000 -g 1000 umask 022 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
 #######################################################################################################################################
@@ -145,5 +150,29 @@ importas REXIT ?
 # importas program
 # source: https://skarnet.org/software/execline/importas.html
 
-foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
-exit $SIGNAL_BUILD_STOP
+# source: https://skarnet.org/software/s6-portable-utils/s6-test.html
+# example: https://github.com/weahead/docker-nginx/blob/614d3d41471db0e93560e683ecbb6ea691d549cc/root/etc/cont-init.d/dnsmasq.sh
+ifelse { s6-test -v $TRAVIS_CI } {
+         foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
+         exit $SIGNAL_BUILD_STOP
+}
+
+# ifelse { s6-test $DRUPAL_SITE_DB_TABLES -eq 0 -o $DRUPAL_SITE_DB_REPLACE_EXISTING = "yes" } {
+#         # Install the site, using the standard profile
+#         # and don't send a e-mail notification.
+#         cd /var/www/localhost/htdocs s6-setuidgid apache drush -y si
+#         islandora_claw install_configure_form.update_status_module='array(FALSE,FALSE)'
+#         --sites-subdir=default
+#         --site-name="${DRUPAL_SITE_NAME}"
+#         --site-mail="${DRUPAL_SITE_EMAIL}"
+#         --locale="${DRUPAL_SITE_LOCALE}"
+#         --account-name="${DRUPAL_SITE_ACCOUNT_NAME}"
+#         --account-pass="${DRUPAL_SITE_ACCOUNT_PASSWORD}"
+#         --account-mail="${DRUPAL_SITE_ACCOUNT_EMAIL}"
+#         --db-url="mysql://${DRUPAL_SITE_DB_USER}:${DRUPAL_SITE_DB_PASSWORD}@${MYSQL_HOST}:${MYSQL_HOST_PORT}/${DRUPAL_SITE_DB_NAME}"
+#         --db-su="${MYSQL_ROOT_USER}" --db-su-pw="${MYSQL_ROOT_PASSWORD}"
+#     }
+
+# foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
+# exit $SIGNAL_BUILD_STOP
+
