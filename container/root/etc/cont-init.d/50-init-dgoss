@@ -35,61 +35,212 @@ foreground { s6-echo " [run] goss jhbuild tests" }
 # Okay I think this will actually run the tests like the pi user
 # su - pi -c "/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s"
 
+#######################################################################################################################################
+# FIXME: comment this back in for tonight
+# source: https://askubuntu.com/questions/490620/difference-between-logname-and-logname
 with-contenv
+
+foreground { s6-echo " [run] env before multisubstitute" }
+foreground { s6-env }
+
 s6-envuidgid pi
+
+foreground { s6-echo " [run] multisubstitute for GOSS TESTS" }
 multisubstitute
 {
-  import -u -D0 UID
-  import -u -D0 GID
-  import -u -D0 DEBIAN_FRONTEND
-  import -u -D0 LANG
-  import -u -D0 LC_ALL
-  import -u -D0 UNAME
-  import -u -D0 NOT_ROOT_USER
-  import -u -D0 USER_HOME
-  import -u -D0 PROJECT_HOME
-  import -u -D0 SKIP_ON_TRAVIS
-  import -u -D0 CURRENT_DIR
-  import -u -D0 GSTREAMER
-  import -u -D0 ENABLE_PYTHON3
-  import -u -D0 ENABLE_GTK
-  import -u -D0 PREFIX
-  import -u -D0 JHBUILD
-  import -u -D0 PATH
-  import -u -D0 LD_LIBRARY_PATH
-  import -u -D0 PYTHONPATH
-  import -u -D0 PKG_CONFIG_PATH
-  import -u -D0 XDG_DATA_DIRS
-  import -u -D0 XDG_CONFIG_DIRS
-  import -u -D0 PYTHON
-  import -u -D0 NOTVISIBLE
-  import -u -D0 VIRTUALENVWRAPPER_VIRTUALENV
-  import -u -D0 VIRTUALENV_WRAPPER_SH
-  import -u -D0 PYTHONUNBUFFERED
-  import -u -D0 PYTHON_VERSION_MAJOR
-  import -u -D0 USER
-  import -u -D0 LANGUAGE_ID
-  import -u -D0 GITHUB_BRANCH
-  import -u -D0 GITHUB_REPO_NAME
-  import -u -D0 GITHUB_REPO_ORG
-  import -u -D0 PI_HOME
-  import -u -D0 MAIN_DIR
-  import -u -D0 VIRT_ROOT
-  import -u -D0 SCARLETT_CONFIG
-  import -u -D0 SCARLETT_HMM
-  import -u -D0 SCARLETT_LM
-  import -u -D0 SCARLETT_DICT
-  import -u -D0 GST_PLUGIN_PATH
-  import -u -D0 PYTHON_VERSION
-  import -u -D0 VIRTUALENVWRAPPER_PYTHON
-  import -u -D0 VIRTUALENVWRAPPER_SCRIPT
-  import -u -D0 PYTHONSTARTUP
-  import -u -D0 PIP_DOWNLOAD_CACHE
-  import -u -D0 WORKON_HOME
-  import -u -D0 USER_SSH_PUBKEY
-  import -u -D0 HOME
+  importas UID UID
+  importas GID GID
+  importas DEBIAN_FRONTEND DEBIAN_FRONTEND
+  importas LANG LANG
+  importas LC_ALL LC_ALL
+  importas UNAME UNAME
+  importas NOT_ROOT_USER NOT_ROOT_USER
+  importas USER_HOME USER_HOME
+  importas PROJECT_HOME PROJECT_HOME
+  importas SKIP_ON_TRAVIS SKIP_ON_TRAVIS
+  importas CURRENT_DIR CURRENT_DIR
+  importas GSTREAMER GSTREAMER
+  importas ENABLE_PYTHON3 ENABLE_PYTHON3
+  importas ENABLE_GTK ENABLE_GTK
+  importas PREFIX PREFIX
+  importas JHBUILD JHBUILD
+  importas PATH PATH
+  importas LD_LIBRARY_PATH LD_LIBRARY_PATH
+  importas PYTHONPATH PYTHONPATH
+  importas PKG_CONFIG_PATH PKG_CONFIG_PATH
+  importas XDG_DATA_DIRS XDG_DATA_DIRS
+  importas XDG_CONFIG_DIRS XDG_CONFIG_DIRS
+  importas PYTHON PYTHON
+  importas NOTVISIBLE NOTVISIBLE
+  importas VIRTUALENVWRAPPER_VIRTUALENV VIRTUALENVWRAPPER_VIRTUALENV
+  importas VIRTUALENV_WRAPPER_SH VIRTUALENV_WRAPPER_SH
+  importas PYTHONUNBUFFERED PYTHONUNBUFFERED
+  importas PYTHON_VERSION_MAJOR PYTHON_VERSION_MAJOR
+  importas USER USER
+  importas LANGUAGE_ID LANGUAGE_ID
+  importas GITHUB_BRANCH GITHUB_BRANCH
+  importas GITHUB_REPO_NAME GITHUB_REPO_NAME
+  importas GITHUB_REPO_ORG GITHUB_REPO_ORG
+  importas PI_HOME PI_HOME
+  importas MAIN_DIR MAIN_DIR
+  importas VIRT_ROOT VIRT_ROOT
+  importas SCARLETT_CONFIG SCARLETT_CONFIG
+  importas SCARLETT_HMM SCARLETT_HMM
+  importas SCARLETT_LM SCARLETT_LM
+  importas SCARLETT_DICT SCARLETT_DICT
+  importas GST_PLUGIN_PATH GST_PLUGIN_PATH
+  importas PYTHON_VERSION PYTHON_VERSION
+  importas VIRTUALENVWRAPPER_PYTHON VIRTUALENVWRAPPER_PYTHON
+  importas VIRTUALENVWRAPPER_SCRIPT VIRTUALENVWRAPPER_SCRIPT
+  importas PYTHONSTARTUP PYTHONSTARTUP
+  importas PIP_DOWNLOAD_CACHE PIP_DOWNLOAD_CACHE
+  importas WORKON_HOME WORKON_HOME
+  importas USER_SSH_PUBKEY USER_SSH_PUBKEY
+  importas HOME HOME
+  importas XDG_RUNTIME_DIR XDG_RUNTIME_DIR
 }
-/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
+
+foreground { s6-echo " [run] AFTER s6-env -i" }
+foreground { s6-env }
+
+# verify that we're the correct user, pi
+foreground {
+    s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
+}
+
+# s6-applyuidgid -u 1000 -g 1000 umask 022 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
+#######################################################################################################################################
+
+# FIXME: backup of multisubstitue before we modify this guy ^
+# multisubstitute
+# {
+#   import -u -D0 UID
+#   import -u -D0 GID
+#   import -u -D0 DEBIAN_FRONTEND
+#   import -u -D0 LANG
+#   import -u -D0 LC_ALL
+#   import -u -D0 UNAME
+#   import -u -D0 NOT_ROOT_USER
+#   import -u -D0 USER_HOME
+#   import -u -D0 PROJECT_HOME
+#   import -u -D0 SKIP_ON_TRAVIS
+#   import -u -D0 CURRENT_DIR
+#   import -u -D0 GSTREAMER
+#   import -u -D0 ENABLE_PYTHON3
+#   import -u -D0 ENABLE_GTK
+#   import -u -D0 PREFIX
+#   import -u -D0 JHBUILD
+#   import -u -D0 PATH
+#   import -u -D0 LD_LIBRARY_PATH
+#   import -u -D0 PYTHONPATH
+#   import -u -D0 PKG_CONFIG_PATH
+#   import -u -D0 XDG_DATA_DIRS
+#   import -u -D0 XDG_CONFIG_DIRS
+#   import -u -D0 PYTHON
+#   import -u -D0 NOTVISIBLE
+#   import -u -D0 VIRTUALENVWRAPPER_VIRTUALENV
+#   import -u -D0 VIRTUALENV_WRAPPER_SH
+#   import -u -D0 PYTHONUNBUFFERED
+#   import -u -D0 PYTHON_VERSION_MAJOR
+#   import -u -D0 USER
+#   import -u -D0 LANGUAGE_ID
+#   import -u -D0 GITHUB_BRANCH
+#   import -u -D0 GITHUB_REPO_NAME
+#   import -u -D0 GITHUB_REPO_ORG
+#   import -u -D0 PI_HOME
+#   import -u -D0 MAIN_DIR
+#   import -u -D0 VIRT_ROOT
+#   import -u -D0 SCARLETT_CONFIG
+#   import -u -D0 SCARLETT_HMM
+#   import -u -D0 SCARLETT_LM
+#   import -u -D0 SCARLETT_DICT
+#   import -u -D0 GST_PLUGIN_PATH
+#   import -u -D0 PYTHON_VERSION
+#   import -u -D0 VIRTUALENVWRAPPER_PYTHON
+#   import -u -D0 VIRTUALENVWRAPPER_SCRIPT
+#   import -u -D0 PYTHONSTARTUP
+#   import -u -D0 PIP_DOWNLOAD_CACHE
+#   import -u -D0 WORKON_HOME
+#   import -u -D0 USER_SSH_PUBKEY
+#   import -u -D0 HOME
+# }
+
+
+
+# Import defaults from linked container.
+# with-contenv
+
+# foreground { s6-echo " [run] multisubstitute for HOME and XDG_RUNTIME_DIR" }
+
+# # s6-envuidgid potentially sets the UID, GID and GIDLIST environment variables according to the options and arguments it is given; then it executes into another program.
+# s6-envuidgid pi
+# multisubstitute {
+#   importas HOME HOME
+#   importas XDG_RUNTIME_DIR XDG_RUNTIME_DIR
+#   importas UID UID
+#   importas GID GID
+#   importas PATH PATH
+#   importas ENABLE_PYTHON3 ENABLE_PYTHON3
+#   importas ENABLE_GTK ENABLE_GTK
+#   importas PREFIX PREFIX
+#   importas JHBUILD JHBUILD
+#   importas LD_LIBRARY_PATH LD_LIBRARY_PATH
+#   importas PYTHONPATH PYTHONPATH
+# }
+
+# foreground { s6-echo " [run] TEST_PATH is ${TEST_PATH}" }
+# foreground { s6-echo " [run] HOME is ${HOME}" }
+# foreground { s6-echo " [run] XDG_RUNTIME_DIR is ${XDG_RUNTIME_DIR}" }
+# foreground { s6-echo " [run] PATH is ${PATH}" }
+# foreground { s6-env }
+# multisubstitute {
+#     import -D "1000" UID
+#     import -D "1000" GID
+# }
+# # Set uid to 1000 now
+# foreground {
+#     s6-env -i
+#     UID=$UID
+#     GID=$GID
+#     XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+#     s6-dumpenv -- /var/run/s6/container_environment
+# }
+# foreground { s6-echo " [run] AFTER s6-env -i" }
+# foreground { s6-env }
+
+# # verify that we're the correct user, pi
+# foreground {
+#     s6-applyuidgid -u 1000 -g 1000 w
+# }
+
+
+# env
+# printcontenv PATH
+# NOTE: Working version!
+# /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
+
+
+# FIXME: almost, still some small failures
+
+# [36mjhbuild_pygobject3_1  |[0m FFFFFFFFFFFFFFFF.....................................................................................
+# [36mjhbuild_pygobject3_1  |[0m
+# [36mjhbuild_pygobject3_1  |[0m Failures/Skipped:
+# [36mjhbuild_pygobject3_1  |[0m
+# [36mjhbuild_pygobject3_1  |[0m jhbuild run python -c "import gi;gi.require_version('Gst', '1.0');from gi.repository import Gst;print(Gst.version_string());": exit-status: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m jhbuild run python -c "import gi;gi.require_version('Gst', '1.0');from gi.repository import Gst;print(Gst.version_string());": stderr: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m
+# [36mjhbuild_pygobject3_1  |[0m python3 --version: exit-status: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m python3 --version: stderr: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m
+# [36mjhbuild_pygobject3_1  |[0m jhbuild list: exit-status: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m jhbuild list: stderr: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m
+# [36mjhbuild_pygobject3_1  |[0m pip3 --version: exit-status: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m pip3 --version: stderr: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m
+# [36mjhbuild_pygobject3_1  |[0m jhbuild run python -c 'from gi.repository import Gst; print(Gst)': exit-status: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m jhbuild run python -c 'from gi.repository import Gst; print(Gst)': stderr: Error: exec: "sh": executable file not found in $PATH
+# [36mjhbuild_pygobject3_1  |[0m
 
 # /bin/bash -C "/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s"
 
@@ -119,5 +270,5 @@ multisubstitute
 # importas program
 # source: https://skarnet.org/software/execline/importas.html
 
-foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
-exit $SIGNAL_BUILD_STOP
+# foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
+# exit $SIGNAL_BUILD_STOP

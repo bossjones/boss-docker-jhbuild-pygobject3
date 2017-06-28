@@ -4,13 +4,24 @@ MAINTAINER Malcolm Jones <bossjones@theblacktonystark.com>
 # Prepare packaging environment
 ENV DEBIAN_FRONTEND noninteractive
 
+# Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
+# So, to prevent services from being started automatically when you install packages with dpkg, apt, etc., just do this (as root):
+# RUN sed -i "s/^exit 101$/exit 0/" /usr/sbin/policy-rc.d
+
+# make apt use ipv4 instead of ipv6 ( faster resolution )
+RUN sed -i "s@^#precedence ::ffff:0:0/96  100@precedence ::ffff:0:0/96  100@" /etc/gai.conf
+
 # Install language pack before setting env vars to utf-8
 RUN \
   apt-get update && \
   apt-get -y upgrade && \
   apt-get install -y \
  	language-pack-en-base && \
-  rm -rf /var/lib/apt/lists/*
+  apt-get clean && \
+  apt-get autoclean -y && \
+  apt-get autoremove -y && \
+  rm -rf /var/lib/{cache,log}/ && \
+  rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
 # # Ensure UTF-8 lang and locale
 RUN locale-gen en_US.UTF-8
@@ -76,7 +87,7 @@ ENV XDG_DATA_DIRS ${PREFIX}/share:/usr/share
 ENV XDG_CONFIG_DIRS ${PREFIX}/etc/xdg
 
 ENV PYTHON "python3"
-ENV TERM xterm
+ENV TERM "xterm-256color"
 ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
 
@@ -330,6 +341,12 @@ ENV WORKON_HOME "${VIRT_ROOT}"
 # Vagrant pub key for development
 ENV USER_SSH_PUBKEY "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key"
 
+# Configure runtime directory
+# https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+# source: https://github.com/jakelee8/dockerfiles/blob/b1f7fd4520ae3e1b7e9ccebf2b07381a4069cc00/images/steam/steam-ubuntu16.10/Dockerfile
+ENV XDG_RUNTIME_DIR=/run/user/1000
+# ENV XDG_RUNTIME_DIR=/run/pi/1000
+
 # Source: https://github.com/ambakshi/dockerfiles/blob/09a05ceab3b5a93c974783ad27a8a6301f3c4ca2/devbox/debian8/Dockerfile
 RUN echo "[ \$UID -eq 0 ] && PS1='\[\e[31m\]\h:\w#\[\e[m\] ' || PS1='[\[\033[32m\]\u@\h\[\033[00m\] \[\033[36m\]\W\[\033[31m\]\$(__git_ps1)\[\033[00m\]] \$ '"  | tee /etc/bash_completion.d/prompt
 
@@ -341,7 +358,8 @@ RUN echo "[ \$UID -eq 0 ] && PS1='\[\e[31m\]\h:\w#\[\e[m\] ' || PS1='[\[\033[32m
 # FIXME: Look at this guy: https://hub.docker.com/r/radmas/mtc-plus-fpm/~/dockerfile/
 RUN set -xe \
     && useradd -U -d ${PI_HOME} -m -r -G adm,sudo,dip,plugdev,tty,audio ${UNAME} \
-    && usermod -a -G ${UNAME} ${UNAME} \
+    && usermod -a -G ${UNAME} -s /bin/bash -u 1000 ${UNAME} \
+    && groupmod -g 1000 ${UNAME} \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME} \
     && mkdir -p ${MAIN_DIR} \
@@ -354,8 +372,11 @@ RUN set -xe \
     && chown -hR ${UNAME}:${UNAME} ${MAIN_DIR} \
     && echo 'pi     ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && echo '%pi     ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
-    && cat /etc/sudoers && \
-    echo 'pi:raspberry' | chpasswd
+    && cat /etc/sudoers \
+    && echo 'pi:raspberry' | chpasswd \
+    && mkdir -p "$XDG_RUNTIME_DIR" \
+    && chown -R pi:pi "$XDG_RUNTIME_DIR" \
+    && chmod -R 0700 "$XDG_RUNTIME_DIR"
 
 # source: https://github.com/just-containers/s6-overlay
 # FIXME: For now, `s6-overlay` doesn't support
@@ -367,6 +388,7 @@ RUN set -xe \
 WORKDIR /home/$UNAME
 
 ENV HOME "/home/$UNAME"
+# ENV DISPLAY :1
 ############################[END - USER]################################################
 
 # ENV UNAME pacat
@@ -582,6 +604,10 @@ EXPOSE 22
 
 # Overlay the root filesystem from this repo
 COPY ./container/root /
+
+RUN mkdir -p /home/pi/.local/bin \
+    && cp -a /env-setup /home/pi/.local/bin/env-setup \
+    && chmod +x /home/pi/.local/bin/env-setup
 
 RUN bash /prep-pi.sh
 
