@@ -43,10 +43,18 @@ install:
   - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
 
 script:
-  - travis_retry docker-compose -f docker-compose.yml -f ci_build.yml build
+  # - travis_retry docker-compose -f docker-compose.yml -f ci_build.yml build
+  # run goss tests next
+  - travis_retry docker-compose -f docker-compose.test.yml -f ci_build.yml up --build
 
 # source: https://github.com/inspirehep/inspire-next/blob/9700274c36074a3e43168bf48b8ba3e3bfa7bcdf/.travis.yml
 after_script:
   # Killing via SIGTERM in order to trigger atexit and dump coverage information in WSGI
-  - "docker-compose -f docker-compose.yml kill -s SIGTERM"
+  - "docker-compose -f docker-compose.test.yml kill -s SIGTERM"
 
+notifications:
+  email:
+    recipients:
+      - bossjones@theblacktonystark.com
+    on_success: always # default: change
+    on_failure: always # default: always

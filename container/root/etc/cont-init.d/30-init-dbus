@@ -1,0 +1,21 @@
+#!/usr/bin/execlineb -P
+# -*- mode: bash -*-
+# vi: set ft=bash:
+
+# FIXME: Enable this
+# FIXME: Change the value of the file from 30 to something else earlier
+# source: https://github.com/nicjo814/docker-kodi/blob/8d4e7b7c2be098ff8db1026613d92a0f68ca3d33/root/etc/cont-init.d/30-dbus
+
+# # make folders
+# mkdir -p \
+# 	/var/run/dbus
+
+# # delete existing pid if found
+# [[ -e /var/run/dbus/pid ]] && \
+# 	rm -f /var/run/dbus/pid
+
+# # permissions
+# chown messagebus:messagebus \
+# 	/var/run/dbus
+# dbus-uuidgen --ensure
+# sleep 1

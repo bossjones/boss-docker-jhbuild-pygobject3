@@ -23,11 +23,14 @@ command:
   jhbuild run python -c "import gi;gi.require_version('Gst', '1.0');from gi.repository import Gst;print(Gst.version_string());":
     exit-status: 0
     stderr: ['add use_local_modulesets = True']
+  # echo {{ .Env.PATH }}:
+  #   stdout:
+  #     - "\/home\/pi\/jhbuild\/bin:\/home\/pi\/jhbuild\/sbin:\/usr\/local\/bin:\/usr\/local\/sbin:\/usr\/local\/bin:\/usr\/local\/sbin:\/usr\/local\/bin:\/usr\/sbin:\/usr\/bin:\/sbin:\/bin"
 user:
   pi:
     exists: true
-    uid: 999
-    gid: 999
+    uid: 1000
+    gid: 1000
     groups:
     - pi
     home: /home/pi
