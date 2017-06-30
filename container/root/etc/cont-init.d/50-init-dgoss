@@ -1,52 +1,44 @@
 #!/usr/bin/execlineb -PW
-# Normally the EXECLINE_STRICT environment variable is inherited from the caller. You can force it unset, set to 1, or set to 2 by giving respectively the -q, -w or -W option to execlineb.
+# Normally the EXECLINE_STRICT environment variable is inherited from the caller.
+# You can force it unset, set to 1, or set to 2 by giving respectively the -q, -w or -W option to execlineb.
 # -*- mode: bash -*-
 # vi: set ft=bash:
 
+# source: https://askubuntu.com/questions/490620/difference-between-logname-and-logname
+
+# NOTE: foreground program
+# foreground { prog1... } prog2...
+# foreground is the basic sequence operator: it takes two commands and executes them one by one.
+# execline scripts require it to wrap external commands that exit instead of natively supporting the "perform some action,
+# then execute some other program" model.
+# foreground prog1... "" prog2... is equivalent to sh -c 'prog1... ; exec prog2...'
 foreground { s6-echo " [run] goss jhbuild tests" }
 
-# FIXME: This is broken for some reason
-# exec s6-setuidgid pi /bin/bash -C '/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s'
-
-# FIXME: This is broken as well
-# exec s6-setuidgid pi /bin/bash -C '/usr/local/bin/goss --help'
-
-# FIXME: Wow so this is busted too, error below
-# exec s6-setuidgid pi /bin/bash -C 'w'
-
-
-# jhbuild_pygobject3_1  |  [run] SCARLETT_BUILD_GNOME not set, moving on ...
-# jhbuild_pygobject3_1  | [cont-init.d] 40-init-jhbuild: exited 0.
-# jhbuild_pygobject3_1  | [cont-init.d] 50-init-dgoss: executing...
-# jhbuild_pygobject3_1  | [run] goss jhbuild tests
-# jhbuild_pygobject3_1  | /usr/bin/who: /usr/bin/who: cannot execute binary file
-# jhbuild_pygobject3_1  | [cont-init.d] 50-init-dgoss: exited 126.
-# jhbuild_pygobject3_1  | [cont-finish.d] executing container finish scripts...
-# jhbuild_pygobject3_1  | [cont-finish.d] done.
-
-# NOTE: Lets try this with execlineb, meaning it'll run as root
-# TODO: Surround this in a conditional to tell us to run the tests or skip them. By default we want them on
-# NOTE: Okay this actually runs, BUT, it errors on 30 items because it isn't running as pi user
-
-# s6-setuidgid pi
-# with-contenv
-# s6-env -i
-# /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
-
-# Okay I think this will actually run the tests like the pi user
-# su - pi -c "/usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s"
-
-#######################################################################################################################################
-# FIXME: comment this back in for tonight
-# source: https://askubuntu.com/questions/490620/difference-between-logname-and-logname
+# NOTE: pull in environment vars from container
 with-contenv
 
+# NOTE: Echo status, then dump env program to stdout
 foreground { s6-echo " [run] env before multisubstitute" } s6-env
-# foreground { s6-env }
 
+# NOTE: s6-envuidgid program
+# s6-envuidgid potentially sets the UID,
+# GID and GIDLIST environment variables according to
+# the options and arguments it is given; then it executes into another program.
+# s6-envuidgid [ -u | -g | -B ] [ -n ] [ -i | -D uid:gid:gidlist ] account prog...
+# NOTE: set UID and GID env vars to pi
 s6-envuidgid pi
 
 foreground { s6-echo " [run] multisubstitute for GOSS TESTS" }
+
+# NOTE: multisubstitute program [ help output is only a subset of full options ]
+#  multisubstitute performs several substitutions at once in its argv, then executes another program.
+#  multisubstitute
+#      {
+#        [ define [ -n ] [ -s ] [ -C | -c ] [ -d delim ] variable value ]
+#        [ importas [ -i | -D default ] [ -n ] [ -s ] [ -C | -c ] [ -d delim ] variable envvar ]
+#        ...
+#      }
+#      prog...
 multisubstitute
 {
   importas UID UID
@@ -106,21 +98,20 @@ multisubstitute
 foreground { s6-echo " [run] AFTER s6-env -i" }
 foreground { s6-env }
 
-# verify that we're the correct user, pi
-# NOTE: if program
-# if [ -X ] [ -n ] [ -t | -x exitcode ] { prog1... } prog2...
-# if will exit if prog1... exits false. To use it in an execline script that must run prog3... no matter the result of the test, use a foreground wrapper:
-# foreground { if { prog1... } prog2... } prog3...
-# -X : treat a crash of prog1 as a non-zero ("false") exit.
-# -n : negate the test (exit on true, exec into prog2 on false)
-# -x exitcode : exit exitcode instead of 1 if the test fails.
-# -t : exit 0 instead of 1 if the test fails. This is equivalent to -x 0.
-
 foreground {
+    # NOTE: if program
+    # if [ -X ] [ -n ] [ -t | -x exitcode ] { prog1... } prog2...
+    # if will exit if prog1... exits false. To use it in an execline script that must run prog3... no matter the result of the test, use a foreground wrapper:
+    # foreground { if { prog1... } prog2... } prog3...
+    # -X : treat a crash of prog1 as a non-zero ("false") exit.
+    # -n : negate the test (exit on true, exec into prog2 on false)
+    # -x exitcode : exit exitcode instead of 1 if the test fails.
+    # -t : exit 0 instead of 1 if the test fails. This is equivalent to -x 0.
     if {
         if { s6-echo " [run] lets start these goss tests..." }
-        # foreground { s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s }
-        foreground { s6-echo " [run] pretend we just ran s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s" }
+        # NOTE: verify that we're the correct user, pi
+        foreground { s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s }
+        # NOTE: UNCOMMENT THIS LINE IF YOU NEED TO TEST THIS LOGIC WITHOUT RUNNING TESTS # foreground { s6-echo " [run] pretend we just ran s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s" }
         # NOTE: importas program
         # importas [ -i | -D default ] [ -u ] [ -s ] [ -C | -c ] [ -n ] [ -d delim ] variable envvar prog...
         # D default : If this option is given and envvar is undefined, substitute default for the value of variable instead of no word. For instance, to substitute the empty word, use -D "".
@@ -133,44 +124,13 @@ foreground {
     }
 }
 
-# NOTE: foreground program
-# foreground { prog1... } prog2...
-# foreground is the basic sequence operator: it takes two commands and executes them one by one.
-# execline scripts require it to wrap external commands that exit instead of natively supporting the "perform some action,
-# then execute some other program" model.
-# foreground prog1... "" prog2... is equivalent to sh -c 'prog1... ; exec prog2...'.
-foreground { s6-echo " [run] AFTER foreground goss tests" }
 
-# NOTE: ifelse program
-# ifelse [ -X ] [ -n ] { prog1... } { prog2... } prog3...
-# -X : do not die if prog1 crashes; treat a crash as a non-zero ("false") exit.
-# ifelse -X { s6-test -v TRAVIS_CI } {
-#           foreground { s6-echo " [run] TRAVIS_CI: ${TRAVIS_CI}." }
-#           foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
-#           exit ${SIGNAL_BUILD_STOP}
-# }
-# exit 0
+foreground { s6-echo " [run] AFTER foreground goss tests" }
 
 # NOTE: if program
 # -t = exit 0 if test fails
 if -t { s6-test $TRAVIS_CI = true } foreground { s6-echo " [run] TRAVIS_CI: '${TRAVIS_CI}' ... sending signal build stop" }
 exit ${SIGNAL_BUILD_STOP}
-# if -t { s6-test -v TRAVIS_CI } {
-#     foreground { s6-echo " [run] TRAVIS_CI: ${TRAVIS_CI}." }
-#     foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
-#     exit ${SIGNAL_BUILD_STOP}
-# } exit 0
-
-# ifelse { s6-test $REXIT -gt 0 } { exit ${REXIT} }
-
-
-# s6-applyuidgid -u 1000 -g 1000 umask 022 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
-#######################################################################################################################################
-
-# env
-# printcontenv PATH
-# NOTE: Working version!
-# /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
 
 ######################################################################
 # source: claw-docker-base
@@ -189,41 +149,4 @@ exit ${SIGNAL_BUILD_STOP}
 # }
 ######################################################################
 
-## Signal build complete if running on ci ##
-# if [[ $TRAVIS_CI ]]; then
-#   echo " [run] finished running jhbuild goss tests ... sending signal complete"
-#   exit $SIGNAL_BUILD_STOP
-# fi
-
-# importas program
-# source: https://skarnet.org/software/execline/importas.html
-
-# source: https://skarnet.org/software/s6-portable-utils/s6-test.html
 # example: https://github.com/weahead/docker-nginx/blob/614d3d41471db0e93560e683ecbb6ea691d549cc/root/etc/cont-init.d/dnsmasq.sh
-
-# ifelse { s6-test -v ${TRAVIS_CI} } {
-#           foreground { s6-echo -- " [run] TRAVIS_CI: ${TRAVIS_CI}." }
-#           foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
-#           exit ${SIGNAL_BUILD_STOP}
-# }
-# exit 0
-
-# ifelse { s6-test $DRUPAL_SITE_DB_TABLES -eq 0 -o $DRUPAL_SITE_DB_REPLACE_EXISTING = "yes" } {
-#         # Install the site, using the standard profile
-#         # and don't send a e-mail notification.
-#         cd /var/www/localhost/htdocs s6-setuidgid apache drush -y si
-#         islandora_claw install_configure_form.update_status_module='array(FALSE,FALSE)'
-#         --sites-subdir=default
-#         --site-name="${DRUPAL_SITE_NAME}"
-#         --site-mail="${DRUPAL_SITE_EMAIL}"
-#         --locale="${DRUPAL_SITE_LOCALE}"
-#         --account-name="${DRUPAL_SITE_ACCOUNT_NAME}"
-#         --account-pass="${DRUPAL_SITE_ACCOUNT_PASSWORD}"
-#         --account-mail="${DRUPAL_SITE_ACCOUNT_EMAIL}"
-#         --db-url="mysql://${DRUPAL_SITE_DB_USER}:${DRUPAL_SITE_DB_PASSWORD}@${MYSQL_HOST}:${MYSQL_HOST_PORT}/${DRUPAL_SITE_DB_NAME}"
-#         --db-su="${MYSQL_ROOT_USER}" --db-su-pw="${MYSQL_ROOT_PASSWORD}"
-#     }
-
-# foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
-# exit $SIGNAL_BUILD_STOP
-
