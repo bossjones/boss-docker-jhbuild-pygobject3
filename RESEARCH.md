@@ -155,3 +155,39 @@ https://gist.github.com/marcbachmann/16574ba8c614bb3b78614a351f324b86
 ### [Caching] Example 5
 
 http://rundef.com/fast-travis-ci-docker-build
+
+-------------------
+
+# Why I Ditched DockerHub's Automated Builds
+
+http://www.mikeheijmans.com/docker/2015/09/18/why-i-ditched-docker-hub-auto-builds/
+
+
+# travis push docker hub
+
+### Pushing a Docker Image to a Registry
+
+In order to push an image to a registry, one must first authenticate via docker login. The email, username, and password used for login should be stored in the repository settings environment variables, which may be set up through the web or locally via the Travis CLI, e.g.:
+
+```
+travis env set DOCKER_USERNAME myusername
+travis env set DOCKER_PASSWORD secretsecret
+```
+
+Within your .travis.yml prior to attempting a docker push or perhaps before docker pull of a private image, e.g.:
+
+```
+docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+```
+
+### Branch Based Registry Pushes
+
+To push a particular branch of your repository to a remote registry, use the after_success section of your .travis.yml:
+
+```
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push USER/REPO;
+    fi
+```

@@ -9,8 +9,7 @@ jhbuild_pygobject3:
     # NOTE: This enables SSHD access inside of the container for dev purposes
     # 1 = false
     # 0 = true
-    # NOTE: this compose fileis for dev work
-    SCARLETT_ENABLE_SSHD: 0
+    SCARLETT_ENABLE_SSHD: 1
     SCARLETT_ENABLE_DBUS: 1
     SCARLETT_BUILD_GNOME: 'true'
     TRAVIS_CI: 'true'

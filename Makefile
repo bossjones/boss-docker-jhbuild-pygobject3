@@ -74,3 +74,13 @@ docker-exec:
 .PHONY: docker-exec-master
 docker-exec-master:
 	@docker exec -i -t bossdockerjhbuildpygobject3_jhbuild_pygobject3_1 bash
+
+.PHONY: rake_deps
+rake_deps:
+	@gem install httparty -v 0.15.5
+	@gem install bundler -v 1.15.1
+	@bundle install --path .vendor
+
+.PHONY: rake_deps_build
+rake_deps_build: rake_deps
+	@bundle exec rake build

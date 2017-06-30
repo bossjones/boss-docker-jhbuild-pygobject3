@@ -1,2 +1,5 @@
 *.xterm
 sshd_log.txt
+
+.bundle/
+.vendor/

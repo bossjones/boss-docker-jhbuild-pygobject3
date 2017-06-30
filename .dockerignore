@@ -7,3 +7,7 @@ sshd_log.txt
 LICENSE
 README.md
 contributing.md
+
+# ruby
+.bundle/
+.vendor/
