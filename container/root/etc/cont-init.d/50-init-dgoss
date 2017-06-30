@@ -1,4 +1,5 @@
-#!/usr/bin/execlineb -P
+#!/usr/bin/execlineb -PW
+# Normally the EXECLINE_STRICT environment variable is inherited from the caller. You can force it unset, set to 1, or set to 2 by giving respectively the -q, -w or -W option to execlineb.
 # -*- mode: bash -*-
 # vi: set ft=bash:
 
@@ -40,8 +41,8 @@ foreground { s6-echo " [run] goss jhbuild tests" }
 # source: https://askubuntu.com/questions/490620/difference-between-logname-and-logname
 with-contenv
 
-foreground { s6-echo " [run] env before multisubstitute" }
-foreground { s6-env }
+foreground { s6-echo " [run] env before multisubstitute" } s6-env
+# foreground { s6-env }
 
 s6-envuidgid pi
 
@@ -99,22 +100,69 @@ multisubstitute
   importas HOME HOME
   importas XDG_RUNTIME_DIR XDG_RUNTIME_DIR
   importas SIGNAL_BUILD_STOP SIGNAL_BUILD_STOP
+  importas TRAVIS_CI TRAVIS_CI
 }
 
 foreground { s6-echo " [run] AFTER s6-env -i" }
 foreground { s6-env }
 
 # verify that we're the correct user, pi
+# NOTE: if program
+# if [ -X ] [ -n ] [ -t | -x exitcode ] { prog1... } prog2...
+# if will exit if prog1... exits false. To use it in an execline script that must run prog3... no matter the result of the test, use a foreground wrapper:
+# foreground { if { prog1... } prog2... } prog3...
+# -X : treat a crash of prog1 as a non-zero ("false") exit.
+# -n : negate the test (exit on true, exec into prog2 on false)
+# -x exitcode : exit exitcode instead of 1 if the test fails.
+# -t : exit 0 instead of 1 if the test fails. This is equivalent to -x 0.
+
 foreground {
-    s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
+    if {
+        if { s6-echo " [run] lets start these goss tests..." }
+        # foreground { s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s }
+        foreground { s6-echo " [run] pretend we just ran s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s" }
+        # NOTE: importas program
+        # importas [ -i | -D default ] [ -u ] [ -s ] [ -C | -c ] [ -n ] [ -d delim ] variable envvar prog...
+        # D default : If this option is given and envvar is undefined, substitute default for the value of variable instead of no word. For instance, to substitute the empty word, use -D "".
+        # -i : Insist. If envvar is undefined, importas will not do anything; instead, it will exit 100 with an error message. This has precedence over any -D option.
+        # -u : Unexport. envvar will be removed from the environment after the substitution. importas -u variable envvar is equivalent to importas variable envvar unexport envvar.
+        # Other options are used to control the substitution mechanism.
+        importas REXIT ?
+        foreground { s6-echo " [run] goss exited ${REXIT}." }
+        foreground { s6-echo " [run] goss tests ran succesfully fool" }
+    }
 }
 
-importas REXIT ?
+# NOTE: foreground program
+# foreground { prog1... } prog2...
+# foreground is the basic sequence operator: it takes two commands and executes them one by one.
+# execline scripts require it to wrap external commands that exit instead of natively supporting the "perform some action,
+# then execute some other program" model.
+# foreground prog1... "" prog2... is equivalent to sh -c 'prog1... ; exec prog2...'.
+foreground { s6-echo " [run] AFTER foreground goss tests" }
 
-ifelse { s6-test $REXIT -gt 0 } {
-         foreground { s6-echo " [run] goss had an error lets stop everything" }
-         exit $REXIT
-}
+# NOTE: ifelse program
+# ifelse [ -X ] [ -n ] { prog1... } { prog2... } prog3...
+# -X : do not die if prog1 crashes; treat a crash as a non-zero ("false") exit.
+# ifelse -X { s6-test -v TRAVIS_CI } {
+#           foreground { s6-echo " [run] TRAVIS_CI: ${TRAVIS_CI}." }
+#           foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
+#           exit ${SIGNAL_BUILD_STOP}
+# }
+# exit 0
+
+# NOTE: if program
+# -t = exit 0 if test fails
+if -t { s6-test $TRAVIS_CI = true } foreground { s6-echo " [run] TRAVIS_CI: '${TRAVIS_CI}' ... sending signal build stop" }
+exit ${SIGNAL_BUILD_STOP}
+# if -t { s6-test -v TRAVIS_CI } {
+#     foreground { s6-echo " [run] TRAVIS_CI: ${TRAVIS_CI}." }
+#     foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
+#     exit ${SIGNAL_BUILD_STOP}
+# } exit 0
+
+# ifelse { s6-test $REXIT -gt 0 } { exit ${REXIT} }
+
 
 # s6-applyuidgid -u 1000 -g 1000 umask 022 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
 #######################################################################################################################################
@@ -152,10 +200,13 @@ ifelse { s6-test $REXIT -gt 0 } {
 
 # source: https://skarnet.org/software/s6-portable-utils/s6-test.html
 # example: https://github.com/weahead/docker-nginx/blob/614d3d41471db0e93560e683ecbb6ea691d549cc/root/etc/cont-init.d/dnsmasq.sh
-ifelse { s6-test -v $TRAVIS_CI } {
-         foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
-         exit $SIGNAL_BUILD_STOP
-}
+
+# ifelse { s6-test -v ${TRAVIS_CI} } {
+#           foreground { s6-echo -- " [run] TRAVIS_CI: ${TRAVIS_CI}." }
+#           foreground { s6-echo " [ [run] finished running jhbuild goss tests ... sending signal complete" }
+#           exit ${SIGNAL_BUILD_STOP}
+# }
+# exit 0
 
 # ifelse { s6-test $DRUPAL_SITE_DB_TABLES -eq 0 -o $DRUPAL_SITE_DB_REPLACE_EXISTING = "yes" } {
 #         # Install the site, using the standard profile
