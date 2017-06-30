@@ -84,3 +84,7 @@ rake_deps:
 .PHONY: rake_deps_build
 rake_deps_build: rake_deps
 	@bundle exec rake build
+
+.PHONY: rake_deps_build_push
+rake_deps_build_push: rake_deps_build
+	@bundle exec rake push

@@ -3,3 +3,9 @@ sshd_log.txt
 
 .bundle/
 .vendor/
+
+# arbirtary files
+env.log
+env_to_change
+env_to_change_envvar
+temp
