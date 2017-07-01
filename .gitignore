@@ -1,6 +1,7 @@
 *.xterm
 sshd_log.txt
 
+# ruby
 .bundle/
 .vendor/
 

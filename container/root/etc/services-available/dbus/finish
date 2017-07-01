@@ -1,0 +1,7 @@
+# !/usr/bin/execlineb -S1
+# if { s6-test ${1} -ne 0 }
+# if { s6-test ${1} -ne 256 }
+# s6-svscanctl -t /var/run/s6/services
+
+# NOTE: Replacement to: rm "$ADDRESS_FILE" "$PID_FILE"
+find /tmp \( -name 'pydbustest_pid_file*' -o -name 'pydbustest_address*' \) | sudo xargs rm -rf

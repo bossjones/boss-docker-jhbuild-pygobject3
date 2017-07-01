@@ -12,6 +12,7 @@ jhbuild_pygobject3:
     # NOTE: this compose fileis for dev work
     SCARLETT_ENABLE_SSHD: 0
     SCARLETT_ENABLE_DBUS: 1
+    SCARLETT_ENABLE_DBUS: 0
     SCARLETT_BUILD_GNOME: 'true'
     TRAVIS_CI: 'true'
   volumes:
