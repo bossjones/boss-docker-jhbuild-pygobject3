@@ -95,8 +95,11 @@ multisubstitute
   importas TRAVIS_CI TRAVIS_CI
 }
 
-foreground { s6-echo " [run] AFTER s6-env -i" }
-foreground { s6-env }
+################################################################################
+# DEBUG: Enable this if you need to validate environment variables
+# foreground { s6-echo " [run] AFTER s6-env -i" }
+# foreground { s6-env }
+################################################################################
 
 foreground {
     # NOTE: if program
@@ -112,6 +115,7 @@ foreground {
         # NOTE: verify that we're the correct user, pi
         foreground { s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s }
         # NOTE: UNCOMMENT THIS LINE IF YOU NEED TO TEST THIS LOGIC WITHOUT RUNNING TESTS # foreground { s6-echo " [run] pretend we just ran s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s" }
+        # foreground { s6-echo " [run] pretend we just ran s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s" }
         # NOTE: importas program
         # importas [ -i | -D default ] [ -u ] [ -s ] [ -C | -c ] [ -n ] [ -d delim ] variable envvar prog...
         # D default : If this option is given and envvar is undefined, substitute default for the value of variable instead of no word. For instance, to substitute the empty word, use -D "".
@@ -144,9 +148,20 @@ exit ${SIGNAL_BUILD_STOP}
 # }
 # foreground {
 #   with-contenv
+#####################################################################
+#   NOTE: s6-env program
+#   s6-env prints the current environment or modifies the environment before running a program.
+#   s6-env [ -i ] [ name=value... ] [ prog... ]
 #   s6-env -i
+#####################################################################
+#
+#####################################################################
+#   NOTE: s6-dumpenv program
+#   s6-dumpenv stores its environment variables into a directory.
+#   s6-dumpenv [ -m mode ] dir
+#   Special Note: A program prog can be run with the environment in dir by using s6-envdir -fn -- dir prog.
 #   s6-dumpenv -- /var/run/s6/container_environment
+#####################################################################
 # }
-######################################################################
 
 # example: https://github.com/weahead/docker-nginx/blob/614d3d41471db0e93560e683ecbb6ea691d549cc/root/etc/cont-init.d/dnsmasq.sh
