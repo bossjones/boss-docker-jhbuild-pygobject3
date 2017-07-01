@@ -3,6 +3,11 @@
 Gnome x Jhbuild x PyGObject x Cmusphinx x Gtk+3 in 🐳
 
 [![Build Status](https://travis-ci.org/bossjones/boss-docker-jhbuild-pygobject3.svg?branch=master)](https://travis-ci.org/bossjones/boss-docker-jhbuild-pygobject3)
+[![GitHub release](https://img.shields.io/github/release/bossjones/boss-docker-jhbuild-pygobject3.svg)]()
+[![Docker Stars](https://img.shields.io/docker/stars/bossjones/boss-docker-jhbuild-pygobject3.svg)](https://hub.docker.com/r/bossjones/boss-docker-jhbuild-pygobject3/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/bossjones/boss-docker-jhbuild-pygobject3.svg)](https://hub.docker.com/r/bossjones/boss-docker-jhbuild-pygobject3/)
+[![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./CONTRIBUTING.md)
+[![LICENSE](https://img.shields.io/badge/license-Apache-blue.svg?style=flat-square)](./LICENSE)
 
 NOTE: This is a prereq for `scarlett_os`. It makes some strong assumptions about how you plan on running jhbuild, and should mainly just run on CI systems.
 

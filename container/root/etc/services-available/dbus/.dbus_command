@@ -14,9 +14,5 @@ echo "export DBUS_SESSION_BUS_ADDRESS=$(cat "$ADDRESS_FILE")" > ~pi/.exports
 
 echo "D-Bus per-session daemon address is: $DBUS_SESSION_BUS_ADDRESS"
 
-# trap 'kill -TERM $PID' EXIT
 
-# rm "$ADDRESS_FILE" "$PID_FILE"
-
-# sudo find \( -name __pycache__ -o -name '*.pyc' \) | sudo xargs rm -rf
 sudo chown pi:pi -R /home/pi/dev
