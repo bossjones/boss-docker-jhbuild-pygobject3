@@ -8,6 +8,8 @@ end
 
 # The name of the container
 # This is based off of the directory name
+# irb(main):001:0> File.basename(Dir.getwd)
+# => "boss-docker-jhbuild-pygobject3"
 def container_name
   File.basename(Dir.getwd)
 end
@@ -69,7 +71,19 @@ end
 
 desc "builds as latest"
 task :build => :install_deps do
-  sh "docker build -t #{username}/#{container_name}:latest ."
+  sh "docker build --build-arg SCARLETT_ENABLE_SSHD=0 SCARLETT_ENABLE_DBUS='true' SCARLETT_BUILD_GNOME='false' TRAVIS_CI='true' -t #{username}/#{container_name}:latest ."
 end
+
+# # build-arg are acceptable
+# # eg. docker build --build-arg var=xxx
+# ARG SCARLETT_ENABLE_SSHD
+# ARG SCARLETT_ENABLE_DBUS
+# ARG SCARLETT_BUILD_GNOME
+# ARG TRAVIS_CI
+
+# ENV SCARLETT_ENABLE_SSHD ${SCARLETT_ENABLE_SSHD:-0}
+# ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}
+# ENV SCARLETT_BUILD_GNOME ${SCARLETT_BUILD_GNOME:-'false'}
+# ENV TRAVIS_CI ${TRAVIS_CI:='false'}
 
 task :default => [:build, :push]

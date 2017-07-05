@@ -3,6 +3,7 @@ jhbuild_pygobject3:
   environment:
     SERVER_LOG_MINIMAL: 1
     SERVER_APP_NAME: jhbuild-pygobject3-ci
+    # COMPOSE_PROJECT_NAME: jhbuild-pygobject3-ci
     S6_KILL_FINISH_MAXTIME: 1
     S6_KILL_GRACETIME: 1
     SERVER_WORKER_PROCESSES: 1
@@ -14,7 +15,7 @@ jhbuild_pygobject3:
     SCARLETT_BUILD_GNOME: 'true'
     TRAVIS_CI: 'true'
   volumes:
-   - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
+  - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
   ports:
   - "2222:22"
 

@@ -191,3 +191,36 @@ after_success:
     docker push USER/REPO;
     fi
 ```
+
+
+### NOTE: When we move to docker-compose version 2+
+
+```
+jhbuild_pygobject3:
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      SCARLETT_ENABLE_SSHD: 0
+      SCARLETT_ENABLE_DBUS: 'true'
+      SCARLETT_BUILD_GNOME: 'true'
+      TRAVIS_CI: 'true'
+  environment:
+    SERVER_LOG_MINIMAL: 1
+    SERVER_APP_NAME: jhbuild-pygobject3-ci
+    COMPOSE_PROJECT_NAME: jhbuild-pygobject3-ci
+    S6_KILL_FINISH_MAXTIME: 1
+    S6_KILL_GRACETIME: 1
+    SERVER_WORKER_PROCESSES: 1
+    # NOTE: This enables SSHD access inside of the container for dev purposes
+    # 1 = false
+    # 0 = true
+    SCARLETT_ENABLE_SSHD: 0
+    SCARLETT_ENABLE_DBUS: 'true'
+    SCARLETT_BUILD_GNOME: 'true'
+    TRAVIS_CI: 'true'
+  volumes:
+  - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
+  ports:
+  - "2222:22"
+```

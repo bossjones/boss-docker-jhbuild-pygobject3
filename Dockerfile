@@ -4,6 +4,19 @@ MAINTAINER Malcolm Jones <bossjones@theblacktonystark.com>
 # Prepare packaging environment
 ENV DEBIAN_FRONTEND noninteractive
 
+# build-arg are acceptable
+# eg. docker build --build-arg var=xxx
+ARG SCARLETT_ENABLE_SSHD
+ARG SCARLETT_ENABLE_DBUS
+ARG SCARLETT_BUILD_GNOME
+ARG TRAVIS_CI
+
+ENV SCARLETT_ENABLE_SSHD ${SCARLETT_ENABLE_SSHD:-0}
+ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}
+ENV SCARLETT_BUILD_GNOME ${SCARLETT_BUILD_GNOME:-'true'}
+ENV TRAVIS_CI ${TRAVIS_CI:='true'}
+
+
 # Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
 # So, to prevent services from being started automatically when you install packages with dpkg, apt, etc., just do this (as root):
 # RUN sed -i "s/^exit 101$/exit 0/" /usr/sbin/policy-rc.d

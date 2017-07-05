@@ -1,7 +1,8 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "editor.renderWhitespace": "all",
-    "workbench.iconTheme": "material-theme-icons",
+    "workbench.iconTheme": "material-icon-theme",
+    "files.insertFinalNewline": true,
 
     "files.exclude": {
         "out": false, // set this to true to hide the "out" folder with the compiled JS files

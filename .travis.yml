@@ -40,7 +40,10 @@ cache:
 install:
   - travis_retry docker-compose pull
   # set containers as privileged to bypass Travis environment limitations
+  # NOTE: Before the docker-compose.test.yml modification this worked correctly:
   - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
+  # NOTE: When we move to docker-compose v2+ uncomment this below
+  # - 'sed -i "/dockerfile: Dockerfile/a \ \ \ \ privileged: true" docker-compose.test.yml'
 
 script:
   # - travis_retry docker-compose -f docker-compose.yml -f ci_build.yml build
@@ -58,3 +61,22 @@ notifications:
       - bossjones@theblacktonystark.com
     on_success: always # default: change
     on_failure: always # default: always
+
+# NOTE: For now we need to wait on this
+# after_success:
+#   # # Tag the docker images using the commit hash
+#   # - docker build --tag ${DOCKER_IMAGE}:${TRAVIS_COMMIT} ./;
+
+#   # # Tag docker image as 'latest' if it is the master branch
+#   # - if [ "$TRAVIS_BRANCH" == "master" ]; then
+#   #       docker tag ${DOCKER_IMAGE}:${TRAVIS_COMMIT} ${DOCKER_IMAGE}:latest;
+#   #   fi;
+
+#   # # Tag docker image with the git tag
+#   # - if [ ! -z  "$TRAVIS_TAG" ]; then
+#   #       docker tag ${DOCKER_IMAGE}:${TRAVIS_COMMIT} ${DOCKER_IMAGE}:${TRAVIS_TAG};
+#   #   fi;
+#   - if [ "$TRAVIS_BRANCH" == "master" ]; then
+#     docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+#     docker push USER/REPO;
+#     fi
