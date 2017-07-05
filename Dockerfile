@@ -16,6 +16,10 @@ ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}
 ENV SCARLETT_BUILD_GNOME ${SCARLETT_BUILD_GNOME:-'true'}
 ENV TRAVIS_CI ${TRAVIS_CI:='true'}
 
+RUN echo "SCARLETT_ENABLE_SSHD: ${SCARLETT_ENABLE_SSHD}"
+RUN echo "SCARLETT_ENABLE_DBUS: ${SCARLETT_ENABLE_DBUS}"
+RUN echo "SCARLETT_BUILD_GNOME: ${SCARLETT_BUILD_GNOME}"
+RUN echo "TRAVIS_CI: ${TRAVIS_CI}"
 
 # Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
 # So, to prevent services from being started automatically when you install packages with dpkg, apt, etc., just do this (as root):
