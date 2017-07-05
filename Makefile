@@ -1,5 +1,7 @@
 project := boss-docker-jhbuild-pygobject3
 projects := boss-docker-jhbuild-pygobject3
+username := bossjones
+container_name := boss-docker-jhbuild-pygobject3
 
 .DEFAULT_GOAL := help
 
@@ -88,3 +90,12 @@ rake_deps_build: rake_deps
 .PHONY: rake_deps_build_push
 rake_deps_build_push: rake_deps_build
 	@bundle exec rake push
+
+.PHONY: docker_build_latest
+docker_build_latest:
+	@docker build \
+	--build-arg SCARLETT_ENABLE_SSHD=0 \
+	--build-arg SCARLETT_ENABLE_DBUS='true' \
+	--build-arg SCARLETT_BUILD_GNOME='true' \
+	--build-arg TRAVIS_CI='true' \
+	-t $(username)/$(container_name):latest .

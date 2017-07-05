@@ -71,19 +71,14 @@ end
 
 desc "builds as latest"
 task :build => :install_deps do
-  sh "docker build --build-arg SCARLETT_ENABLE_SSHD=0 SCARLETT_ENABLE_DBUS='true' SCARLETT_BUILD_GNOME='false' TRAVIS_CI='true' -t #{username}/#{container_name}:latest ."
+  build_cmd = [ "docker build",
+              "--build-arg SCARLETT_ENABLE_SSHD=0",
+              "--build-arg SCARLETT_ENABLE_DBUS='true'",
+              "--build-arg SCARLETT_BUILD_GNOME='true'",
+              "--build-arg TRAVIS_CI='true'",
+              "-t #{username}/#{container_name}:latest ."
+  ].join(' ')
+  sh build_cmd
 end
-
-# # build-arg are acceptable
-# # eg. docker build --build-arg var=xxx
-# ARG SCARLETT_ENABLE_SSHD
-# ARG SCARLETT_ENABLE_DBUS
-# ARG SCARLETT_BUILD_GNOME
-# ARG TRAVIS_CI
-
-# ENV SCARLETT_ENABLE_SSHD ${SCARLETT_ENABLE_SSHD:-0}
-# ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}
-# ENV SCARLETT_BUILD_GNOME ${SCARLETT_BUILD_GNOME:-'false'}
-# ENV TRAVIS_CI ${TRAVIS_CI:='false'}
 
 task :default => [:build, :push]
