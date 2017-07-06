@@ -50,3 +50,37 @@ jhbuild_pygobject3_1  | [cont-init.d] done.
 jhbuild_pygobject3_1  | [services.d] starting services
 jhbuild_pygobject3_1  | [services.d] done.
 ```
+
+# Environment Variables
+
+Variable | Example | Description
+--- | --- | ---
+`S6_KILL_FINISH_MAXTIME` | `S6_KILL_FINISH_MAXTIME=1` | Wait time (in ms) for zombie reaping before sending a kill signal
+`S6_KILL_GRACETIME` | `S6_KILL_GRACETIME=1` | Wait time (in ms) for S6 finish scripts before sending kill signal
+`SERVER_LOG_MINIMAL` | `SERVER_LOG_MINIMAL=1` | Wait time (in ms) for S6 finish scripts before sending kill signal
+`SERVER_APP_NAME` | `SERVER_APP_NAME=jhbuild-compile` | Set application name for stdout logging info
+`COMPOSE_PROJECT_NAME` | `COMPOSE_PROJECT_NAME=jhbuild-compile` | The default project name is the basename of the project directory. You can set a custom project name by using the -p command line option or the this environment variable.
+`SCARLETT_ENABLE_SSHD` | `SCARLETT_ENABLE_SSHD=1` | When set to 0, openssh-server will be enabled for development use w/ VSCode or Sublime
+`SCARLETT_ENABLE_DBUS` | `SCARLETT_ENABLE_DBUS='true'` | When set, a session dbus service will be started
+`SCARLETT_BUILD_GNOME` | `SCARLETT_BUILD_GNOME='true'` | When set, jhbuild and deps will be compiled
+`TRAVIS_CI` | `TRAVIS_CI='true'` | Signal s6 to stop when finished all run.d scripts. Important for CI builds.
+
+* `with-contenv` tool, which is used to expose environment variables across scripts, has a limitation that it cannot read beyond 4k characters for environment variable values. To work around this issue, use the script `/scripts/with-bigcontenv` instead of `with-contenv`. You'll need to remove the `with-contenv` from the shebang line, and add  `source /scripts/with-bigcontenv` in the next line after the shebang line.
+
+### Startup/Runtime Modification
+
+To inject changes just before runtime, shell scripts may be placed into the
+`/etc/cont-init.d` folder.
+As part of the process manager, these scripts are run in advance of the supervised processes. @see https://github.com/just-containers/s6-overlay#executing-initialization-andor-finalization-tasks
+
+
+# Optional Arguments
+
+Variable | Example | Description
+--- | --- | ---
+`SCARLETT_ENABLE_SSHD` | `SCARLETT_ENABLE_SSHD=0` | When set to 0, openssh-server will be enabled for development use w/ VSCode or Sublime
+`SCARLETT_ENABLE_DBUS` | `SCARLETT_ENABLE_DBUS='true'` | When set, a session dbus service will be started
+`SCARLETT_BUILD_GNOME` | `SCARLETT_BUILD_GNOME='true'` | When set, jhbuild and deps will be compiled
+`TRAVIS_CI` | `TRAVIS_CI='true'` | Signal s6 to stop when finished all run.d scripts. Important for CI builds.
+
+```

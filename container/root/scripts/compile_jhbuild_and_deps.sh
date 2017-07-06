@@ -1,10 +1,5 @@
-#!/usr/bin/with-contenv bash
-# -*- mode: bash -*-
-# vi: set ft=bash:
+#!/usr/bin/env bash
 
-echo "[run] starting Jhbuild"
-
-cat << EOF > /tmp/jhbuild_setup.sh
 mkdir -p /home/pi/gnome && \
 echo "****************[JHBUILD]****************" && \
 cd /home/pi && \
@@ -145,22 +140,9 @@ jhbuild run make clean all > /dev/null && \
 jhbuild run make install > /dev/null && \
 
 echo "****************[GDBINIT]****************" && \
-sudo zcat /usr/share/doc/python3.5/gdbinit.gz > /home/pi/.gdbinit && \
+sudo zcat /usr/share/doc/python3.5/gdbinit.gz | tee /home/pi/.gdbinit && \
 sudo chown pi:pi /home/pi/.gdbinit && \
 
 echo "****************[GSTREAMER-COMPLETION]****************" && \
 curl -L "https://raw.githubusercontent.com/drothlis/gstreamer/bash-completion-master/tools/gstreamer-completion" | sudo tee -a /etc/bash_completion.d/gstreamer-completion && \
 sudo chown root:root /etc/bash_completion.d/gstreamer-completion
-EOF
-
-if [[ $SCARLETT_BUILD_GNOME != true ]]; then
-  echo " [run] SCARLETT_BUILD_GNOME not set, moving on ..."
-  exit
-fi
-
-# FIXME: 7/6/2017
-# TODO: Disabling this for the moment,
-# we want this to happen during build not runtime
-# exec s6-setuidgid pi /bin/bash -C '/tmp/jhbuild_setup.sh'
-
-exec echo "Skipping run.d jhbuild_setup.sh for now"

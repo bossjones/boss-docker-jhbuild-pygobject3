@@ -54,6 +54,8 @@ script:
 after_script:
   # Killing via SIGTERM in order to trigger atexit and dump coverage information in WSGI
   - "docker-compose -f docker-compose.test.yml kill -s SIGTERM"
+  - "docker images"
+  - "docker ps -a"
 
 notifications:
   email:

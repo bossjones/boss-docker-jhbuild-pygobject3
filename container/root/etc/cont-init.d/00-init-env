@@ -25,7 +25,7 @@ foreground { s6-echo " [run] TEST_PATH is ${TEST_PATH}" }
 foreground { s6-echo " [run] HOME is ${HOME}" }
 foreground { s6-echo " [run] XDG_RUNTIME_DIR is ${XDG_RUNTIME_DIR}" }
 foreground { s6-echo " [run] PATH is ${PATH}" }
-foreground { s6-env }
+# foreground { s6-env }
 multisubstitute {
     import -D "1000" UID
     import -D "1000" GID
@@ -39,7 +39,7 @@ foreground {
     s6-dumpenv -- /var/run/s6/container_environment
 }
 foreground { s6-echo " [run] AFTER s6-env -i" }
-foreground { s6-env }
+# foreground { s6-env }
 
 # verify that we're the correct user, pi
 foreground {

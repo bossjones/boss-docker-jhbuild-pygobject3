@@ -196,31 +196,80 @@ after_success:
 ### NOTE: When we move to docker-compose version 2+
 
 ```
-jhbuild_pygobject3:
-  build:
-    context: .
-    dockerfile: Dockerfile
-    args:
+version: "2"
+
+services:
+  jhbuild_pygobject3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SCARLETT_ENABLE_SSHD: 0
+        SCARLETT_ENABLE_DBUS: 'true'
+        SCARLETT_BUILD_GNOME: 'true'
+        TRAVIS_CI: 'true'
+    environment:
+      SERVER_LOG_MINIMAL: 1
+      SERVER_APP_NAME: jhbuild-pygobject3-ci
+      COMPOSE_PROJECT_NAME: jhbuild-pygobject3-ci
+      S6_KILL_FINISH_MAXTIME: 1
+      S6_KILL_GRACETIME: 1
+      SERVER_WORKER_PROCESSES: 1
+      # NOTE: This enables SSHD access inside of the container for dev purposes
+      # 1 = false
+      # 0 = true
       SCARLETT_ENABLE_SSHD: 0
       SCARLETT_ENABLE_DBUS: 'true'
       SCARLETT_BUILD_GNOME: 'true'
       TRAVIS_CI: 'true'
-  environment:
-    SERVER_LOG_MINIMAL: 1
-    SERVER_APP_NAME: jhbuild-pygobject3-ci
-    COMPOSE_PROJECT_NAME: jhbuild-pygobject3-ci
-    S6_KILL_FINISH_MAXTIME: 1
-    S6_KILL_GRACETIME: 1
-    SERVER_WORKER_PROCESSES: 1
-    # NOTE: This enables SSHD access inside of the container for dev purposes
-    # 1 = false
-    # 0 = true
-    SCARLETT_ENABLE_SSHD: 0
-    SCARLETT_ENABLE_DBUS: 'true'
-    SCARLETT_BUILD_GNOME: 'true'
-    TRAVIS_CI: 'true'
-  volumes:
-  - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
-  ports:
-  - "2222:22"
+    stdin_open: true
+    tty: true
+    volumes:
+    - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
+    ports:
+    - "2222:22"
+```
+
+
+### execline-shell
+
+```
+The execline-shell script:
+
+execline-shell executes $HOME/.execline-shell if available (or /bin/sh otherwise) with the arguments it is given.
+
+Interface:
+
+/etc/execline-shell
+
+- execline-shell transforms itself into ${HOME}/.execline-shell $@.
+- ${HOME}/.execline-shell must be readable and executable by the user. It must exec into an interactive shell with $@ as its argument.
+
+Notes:
+
+execline-shell is meant to be used as the SHELL environment variable value. It allows one to specify his favourite shell and shell configuration in any language, since the ${HOME}/.execline-shell file can be any executable program. ${HOME}/.execline-shell can be seen as a portable .whateverrc file.
+As an administrator-modifiable configuration file, execline-shell provided in execline's examples/etc/ subdirectory, and should be copied by the administrator to /etc.
+```
+
+
+### execline-startup
+
+```
+The execline-startup script:
+
+execline-startup performs some system-specific login initialization,
+then executes ${HOME}/.execline-loginshell.
+
+Interface:
+
+/etc/execline-startup
+
+- execline-startup sets the SHELL environment variable to /etc/execline-shell. It then performs some system-specific initialization, and transforms itself into ${HOME}/.execline-loginshell $@ if available (and /etc/execline-shell otherwise).
+- ${HOME}/.execline-loginshell must be readable and executable by the user. It must exec into $SHELL $@.
+
+Notes:
+
+execline-startup is an execlineb script; hence, it is readable and modifiable. It is meant to be modified by the system administrator to perform system-specific login-time initialization.
+As a modifiable configuration file, execline-startup is provided in execline's examples/etc/ subdirectory, and should be copied by the administrator to /etc.
+execline-startup is meant to be used as a login shell. System administrators should manually add /etc/execline-startup to the /etc/shells file. The /etc/execline-startup file itself plays the role of the /etc/profile file, and ${HOME}/.execline-loginshell plays the role of the ${HOME}/.profile file.
 ```

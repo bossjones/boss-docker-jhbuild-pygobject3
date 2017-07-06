@@ -125,6 +125,14 @@ foreground {
         importas REXIT ?
         foreground { s6-echo " [run] goss exited ${REXIT}." }
         foreground { s6-echo " [run] goss tests ran succesfully fool" }
+        foreground {
+            if -n { s6-test -f /home/pi/gnome } foreground { s6-echo " [run] s6-test -f /home/pi/gnome == TRUE" }
+            cp -a /home/pi/gnome /artifacts/
+        }
+        foreground {
+            if -n { s6-test -f /home/pi/jhbuild } foreground { s6-echo " [run] s6-test -f /home/pi/jhbuild == TRUE" }
+            cp -a /home/pi/jhbuild /artifacts/
+        }
     }
 }
 

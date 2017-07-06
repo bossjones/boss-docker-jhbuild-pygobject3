@@ -275,6 +275,14 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         libxslt1-dev \
                         graphviz \
                         openssh-server \
+                        # optimize compiling
+                        gperf \
+                        bc \
+                        ccache \
+                        file \
+                        rsync \
+                        # vim for debugging
+                        vim \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
          apt-get clean && \
@@ -394,6 +402,25 @@ RUN set -xe \
     && mkdir -p "$XDG_RUNTIME_DIR" \
     && chown -R pi:pi "$XDG_RUNTIME_DIR" \
     && chmod -R 0700 "$XDG_RUNTIME_DIR"
+
+
+# Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
+# - For automated building with private repos only accessible by ssh
+#
+# ********************* ROOT ***********************************************
+RUN mkdir -p /root/.ssh && chmod og-rwx /root/.ssh && \
+    echo "Host * " > /root/.ssh/config && \
+    echo "StrictHostKeyChecking no " >> /root/.ssh/config && \
+    echo "UserKnownHostsFile=/dev/null" >> /root/.ssh/config
+
+# Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
+# - For automated building with private repos only accessible by ssh
+#
+# ********************* PI USER ********************************************
+RUN mkdir -p ${PI_HOME}/.ssh && chmod og-rwx ${PI_HOME}/.ssh && \
+    echo "Host * " > ${PI_HOME}/.ssh/config && \
+    echo "StrictHostKeyChecking no " >> ${PI_HOME}/.ssh/config && \
+    echo "UserKnownHostsFile=/dev/null" >> ${PI_HOME}/.ssh/config
 
 # source: https://github.com/just-containers/s6-overlay
 # FIXME: For now, `s6-overlay` doesn't support
@@ -626,6 +653,20 @@ RUN mkdir -p /home/pi/.local/bin \
     && cp -a /env-setup /home/pi/.local/bin/env-setup \
     && chmod +x /home/pi/.local/bin/env-setup
 
+# NOTE: This should get around any docker permission issues we normally have
+RUN cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+    && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+    && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+
+# NOTE: Temp run install as pi user
+USER $UNAME
+
+# Install jhbuild stuff
+RUN bash /prep-pi.sh && bash /scripts/compile_jhbuild_and_deps.sh
+
+# NOTE: Return to root user when finished
+USER root
+
 RUN bash /prep-pi.sh
 
 # RUN goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
@@ -638,6 +679,9 @@ RUN bash /prep-pi.sh
 # UMASK=002
 # EDGE=0
 # source: https://github.com/hurricanehrndz/docker-containers/blob/64fe4f2f0975587a00d180330b19e0aa7596581f/headphones/Dockerfile
+
+RUN mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
+    ls -lta /artifacts
 
 CMD ["/bin/bash", "/run.sh"]
 

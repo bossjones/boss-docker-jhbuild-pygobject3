@@ -4,6 +4,38 @@ MAINTAINER Malcolm Jones <bossjones@theblacktonystark.com>
 # Prepare packaging environment
 ENV DEBIAN_FRONTEND noninteractive
 
+# build-arg are acceptable
+# eg. docker build --build-arg var=xxx
+ARG SCARLETT_ENABLE_SSHD
+ARG SCARLETT_ENABLE_DBUS
+ARG SCARLETT_BUILD_GNOME
+ARG TRAVIS_CI
+
+# metadata
+ARG CONTAINER_VERSION
+ARG GIT_BRANCH
+ARG GIT_SHA
+
+ENV SCARLETT_ENABLE_SSHD ${SCARLETT_ENABLE_SSHD:-0}
+ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}
+ENV SCARLETT_BUILD_GNOME ${SCARLETT_BUILD_GNOME:-'true'}
+ENV TRAVIS_CI ${TRAVIS_CI:-'true'}
+
+RUN echo "SCARLETT_ENABLE_SSHD: ${SCARLETT_ENABLE_SSHD}"
+RUN echo "SCARLETT_ENABLE_DBUS: ${SCARLETT_ENABLE_DBUS}"
+RUN echo "SCARLETT_BUILD_GNOME: ${SCARLETT_BUILD_GNOME}"
+RUN echo "TRAVIS_CI: ${TRAVIS_CI}"
+
+# # include some metadata
+# ENV CONTAINER_VERSION=$CONTAINER_VERSION \
+#     GIT_BRANCH=$GIT_BRANCH \
+#     GIT_SHA=$GIT_SHA
+# RUN mkdir /image-metadata && \
+#     cd /image-metadata && \
+#     echo "$CONTAINER_VERSION" > version; \
+#     echo "$GIT_BRANCH" > git-branch; \
+#     echo "$GIT_SHA" > git-sha
+
 # make apt use ipv4 instead of ipv6 ( faster resolution )
 RUN sed -i "s@^#precedence ::ffff:0:0/96  100@precedence ::ffff:0:0/96  100@" /etc/gai.conf
 
@@ -82,9 +114,6 @@ ENV PYTHON "python3"
 ENV TERM "xterm-256color"
 ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
-
-# FIXME: required for jhbuild( sudo apt-get install docbook-xsl build-essential git-core python-libxml2 )
-# source: https://wiki.gnome.org/HowDoI/Jhbuild
 
 RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
@@ -228,6 +257,7 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         python-libxslt1 \
                         libxslt1-dev \
                         graphviz \
+                        openssh-server \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
          apt-get clean && \
@@ -236,6 +266,17 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
          rm -rf /var/lib/{cache,log}/ && \
          rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
+# source: https://docs.docker.com/engine/examples/running_ssh_service/
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd \
+    && sed -i -r 's/.?UseDNS\syes/UseDNS no/' /etc/ssh/sshd_config \
+    && sed -i -r 's/.?PasswordAuthentication.+/PasswordAuthentication no/' /etc/ssh/sshd_config \
+    && sed -i -r 's/.?ChallengeResponseAuthentication.+/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
+
+# NOTE: It's an example of how to pass environment variables when running a Dockerized SSHD service.
+# NOTE: SSHD scrubs the environment, therefore ENV variables contained in Dockerfile must be pushed to
+# /etc/profile in order for them to be available.
 # source: https://stackoverflow.com/questions/36292317/why-set-visible-now-in-etc-profile
 ENV NOTVISIBLE "in users profile"
 RUN echo 'export VISIBLE=now' >> /etc/profile
@@ -308,12 +349,6 @@ ENV XDG_RUNTIME_DIR=/run/user/1000
 # Source: https://github.com/ambakshi/dockerfiles/blob/09a05ceab3b5a93c974783ad27a8a6301f3c4ca2/devbox/debian8/Dockerfile
 RUN echo "[ \$UID -eq 0 ] && PS1='\[\e[31m\]\h:\w#\[\e[m\] ' || PS1='[\[\033[32m\]\u@\h\[\033[00m\] \[\033[36m\]\W\[\033[31m\]\$(__git_ps1)\[\033[00m\]] \$ '"  | tee /etc/bash_completion.d/prompt
 
-############################[BEGIN - USER]##############################################
-# FIXME: investigate secure_path: http://manpages.ubuntu.com/manpages/zesty/man5/sudoers.5.html
-# NOTE: umask 077 -> allow read, write, and execute permission for the file's owner, but prohibit read, write, and execute permission for everyone else
-# NOTE: The file mode creation mask is initialized to this value. If not specified, the mask will be initialized to 022.
-# Source: http://manpages.ubuntu.com/manpages/xenial/man8/useradd.8.html
-# FIXME: Look at this guy: https://hub.docker.com/r/radmas/mtc-plus-fpm/~/dockerfile/
 RUN set -xe \
     && useradd -U -d ${PI_HOME} -m -r -G adm,sudo,dip,plugdev,tty,audio ${UNAME} \
     && usermod -a -G ${UNAME} -s /bin/bash -u 1000 ${UNAME} \
@@ -336,16 +371,28 @@ RUN set -xe \
     && chown -R pi:pi "$XDG_RUNTIME_DIR" \
     && chmod -R 0700 "$XDG_RUNTIME_DIR"
 
-# source: https://github.com/just-containers/s6-overlay
-# FIXME: For now, `s6-overlay` doesn't support
-# running it with a user different than `root`,
-# so consequently Dockerfile `USER`
-# directive is not supported (except `USER root` of course ;P).
-# FIXME: I DISABLED THIS 6/23/2017 # USER $UNAME
+# Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
+# - For automated building with private repos only accessible by ssh
+#
+# ********************* ROOT ***********************************************
+RUN mkdir -p /root/.ssh && chmod og-rwx /root/.ssh && \
+    echo "Host * " > /root/.ssh/config && \
+    echo "StrictHostKeyChecking no " >> /root/.ssh/config && \
+    echo "UserKnownHostsFile=/dev/null" >> /root/.ssh/config
+
+# Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
+# - For automated building with private repos only accessible by ssh
+#
+# ********************* PI USER ********************************************
+RUN mkdir -p ${PI_HOME}/.ssh && chmod og-rwx ${PI_HOME}/.ssh && \
+    echo "Host * " > ${PI_HOME}/.ssh/config && \
+    echo "StrictHostKeyChecking no " >> ${PI_HOME}/.ssh/config && \
+    echo "UserKnownHostsFile=/dev/null" >> ${PI_HOME}/.ssh/config
 
 WORKDIR /home/$UNAME
 
 ENV HOME "/home/$UNAME"
+# ENV DISPLAY :1
 
 # Create a basic .jhbuildrc
 RUN echo "import os"                                   > /home/pi/.jhbuildrc && \
@@ -380,6 +427,9 @@ RUN echo "import os"                                   > /home/pi/.jhbuildrc && 
     echo "os.environ['PIP_DOWNLOAD_CACHE'] = '$USER_HOME/.pip/cache'"                        >> /home/pi/.jhbuildrc && \
     cat /home/pi/.jhbuildrc
 
+# Expose port for ssh
+EXPOSE 22
+
 # Overlay the root filesystem from this repo
 COPY ./container/root /
 
@@ -388,6 +438,12 @@ RUN mkdir -p /home/pi/.local/bin \
     && chmod +x /home/pi/.local/bin/env-setup
 
 RUN bash /prep-pi.sh
+
+# FIXME: Do we need this??
+# PYTHONIOENCODING="UTF-8"
+# UMASK=002
+# EDGE=0
+# source: https://github.com/hurricanehrndz/docker-containers/blob/64fe4f2f0975587a00d180330b19e0aa7596581f/headphones/Dockerfile
 
 CMD ["/bin/bash", "/run.sh"]
 

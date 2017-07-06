@@ -3,6 +3,7 @@ jhbuild_pygobject3:
   environment:
     SERVER_LOG_MINIMAL: 1
     SERVER_APP_NAME: jhbuild-pygobject3-ci
+    image: 'bossjones/boss-docker-jhbuild-pygobject3:latest'
     # COMPOSE_PROJECT_NAME: jhbuild-pygobject3-ci
     S6_KILL_FINISH_MAXTIME: 1
     S6_KILL_GRACETIME: 1

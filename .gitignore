@@ -10,3 +10,6 @@ env.log
 env_to_change
 env_to_change_envvar
 temp
+
+artifacts/gnome
+**/artifacts/*
