@@ -30,11 +30,33 @@ Docker container that installs an jhbuild environment that has the following:
 8. Pocketsphinx/Sphinxbase
 
 
+Compiling jhbuild and deps ( Prerequisites )
+-------------
+
+Building from tarball requires:
+
+ - gcc or clang (_for compiling_)
+ - libxft (_for font rendering_)
+ - libxinerama (_for XINERAMA support_)
+ - gdk-pixbuf2 (_for pixmap rendering_)
+ - libxrandr (_for XRANDR support_)
+ - libsndfile (_for sound support_)
+ - libsm (_for X11R6 session management_)
+ - fribidi (_for i18n text rendering_)
+
+Building from git also requires:
+
+ - git (_for cloning the git repository and updating changelogs_)
+ - autoconf/automake or cmake toolchain (_for build scripts_)
+ - xorg-mkfontdir (_for installing themes_)
+ - asciidoctor or asciidoc (_for creating html documentation_)
+ - markdown (_for building release package_)
+
+
+
 # Build
 
 `docker build -t docker-gnome-pygobject-gtk3-gst-cmusphinx-jhbuild .`
-
-
 
 # Links
 

@@ -268,6 +268,35 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         vim \
                         source-highlight \
                         fortune \
+                        ##########################################################
+                        # needed to fix *.html issues
+                        ##########################################################
+                        libxft2-dbg \
+                        libsmdev-dev \
+                        asciidoctor \
+                        markdown \
+                        libghc-cmark-prof \
+                        libghc-markdown-prof \
+                        libmarkdown2-dev \
+                        libpod-markdown-perl \
+                        libhtml-wikiconverter-markdown-perl \
+                        libsoldout1-dev \
+                        libtext-markdown-discount-perl \
+                        libtext-markdown-perl \
+                        libtext-multimarkdown-perl \
+                        # Note, some of these python packages we might need to use pip to install it in future
+                        python-html2text \
+                        python-markdown \
+                        python-mistune \
+                        python3-html2text \
+                        python3-markdown \
+                        python3-misaka \
+                        python3-mistune \
+                        linuxdoc-tools \
+                        linuxdoc-tools-info \
+                        linuxdoc-tools-latex \
+                        linuxdoc-tools-text \
+                        ##########################################################
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
          apt-get clean && \
@@ -459,7 +488,7 @@ ENV CCACHE_DIR /ccache
 # TODO: before building should help with some macro issues
 # FIXME: This needs to be duplicated in the env-setup script, etc
 # /home/pi/jhbuild/share/aclocal
-ENV ACLOCAL_FLAGS "-I ${PREFIX}/share/aclocal"
+# ENV ACLOCAL_FLAGS "-I ${PREFIX}/share/aclocal"
 
 # FIXME: Do we need to add this to jhbuildrc?
 # os.environ['LDFLAGS'] = "-L" + prefix + "/lib" (in .jhbuildrc) helps if libtool picks up the wrong static libraries.
@@ -480,6 +509,9 @@ RUN bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
 USER root
 
 RUN bash /prep-pi.sh
+
+# FIXME: eventually we might need these guys
+# apt-get install  g++ gdb gdbserver
 
 # FIXME: Do we need this??
 # PYTHONIOENCODING="UTF-8"

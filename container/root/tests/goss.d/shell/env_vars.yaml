@@ -128,10 +128,6 @@ command:
     exit-status: 0
     stdout:
       - '/home/pi/dev'
-  echo $PWD:
-    exit-status: 0
-    stdout:
-      - '/home/pi'
   echo $PYTHON:
     exit-status: 0
     stdout:

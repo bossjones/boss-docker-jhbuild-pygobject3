@@ -55,5 +55,6 @@
     "todohighlight.include": "{**/*.js,**/*.jsx,**/*.ts,**/*.tsx,**/*.html,**/*.php,**/*.css,**/*.scss,**/*.mk,**/Makefile}",
     "files.associations": {
         "Vagrantfile": "ruby"
-    }
+    },
+    "restructuredtext.sphinxBuildPath": "/usr/local/bin/sphinx-build"
 }

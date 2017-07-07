@@ -1,10 +1,13 @@
 ---
 gossfile:
-  "/tests/goss.d/hosts/*.yaml": {}
-  "/tests/goss.d/jhbuild/*.yaml": {}
-  "/tests/goss.d/packages/*.yaml": {}
-  "/tests/goss.d/s6/*.yaml": {}
-  "/tests/goss.d/services/*.yaml": {}
-  "/tests/goss.d/shell/*.yaml": {}
-  "/tests/goss.d/user/*.yaml": {}
-
+  "goss.d/jhbuild/python3.yaml": {}
+  "goss.d/jhbuild/gnome_file_permissions.yaml": {}
+  "goss.d/jhbuild/jhbuild_file_permissions.yaml": {}
+  "goss.d/jhbuild/commands.yaml": {}
+  "goss.d/shell/env_vars.yaml": {}
+  "goss.d/s6/env_vars_container_environment.yaml": {}
+  "goss.d/user/user.yaml": {}
+  "goss.d/user/file_permissions.yaml": {}
+  "goss.d/hosts/hostname.yaml": {}
+  "goss.d/services/dbus.yaml": {}
+  "goss.d/packages/xenial.yaml": {}

@@ -2513,3 +2513,49 @@ As far as design is concerned, here's my point of view, but keep in mind that it
 
 So, I have no idea what mechanisms are available to Node.js, or consul, or whatever, but my uninformed opinion is that you should try and take advantage of them, and if it's not an option, then you should probably keep your changes in a separate envdir and read them in addition to the container environment when you (re)start your app.
 ```
+
+
+# aclocal + autoreconf problem
+
+*When this is defined:*
+
+```
+*** Configuring gtk-doc *** [1/1]
+/home/pi/gnome/gtk-doc/autogen.sh --prefix /home/pi/jhbuild --disable-Werror  PYTHON=/usr/bin/python3
+autoreconf: Entering directory `.'
+autoreconf: configure.ac: not using Gettext
+autoreconf: running: aclocal --force -I m4 ${ACLOCAL_FLAGS}
+aclocal: error: couldn't open directory '/home/pi/jhbuild/share/aclocal': No such file or directory
+autoreconf: aclocal failed with exit status: 1
+*** Error during phase configure of gtk-doc: ########## Error running /home/pi/gnome/gtk-doc/autogen.sh --prefix /home/pi/jhbuild --disable-Werror  PYTHON=/usr/bin/python3  *** [1/1]
+*** the following modules were not built *** [1/1]
+gtk-doc
+ERROR: Service 'jhbuild_pygobject3' failed to build: The command '/bin/sh -c bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh' returned a non-zero code: 1
+```
+
+
+# awk magic
+
+*given:*
+
+```
+/tests/goss.d/jhbuild/python3.yaml
+/tests/goss.d/jhbuild/gnome_file_permissions.yaml
+/tests/goss.d/jhbuild/jhbuild_file_permissions.yaml
+/tests/goss.d/jhbuild/commands.yaml
+/tests/goss.d/shell/env_vars.yaml
+/tests/goss.d/s6/env_vars_container_environment.yaml
+/tests/goss.d/user/user.yaml
+/tests/goss.d/user/file_permissions.yaml
+/tests/goss.d/hosts/hostname.yaml
+/tests/goss.d/services/dbus.yaml
+/tests/goss.d/packages/xenial.yaml
+/tests/goss.python3.yaml
+/tests/goss.jhbuild.yaml
+```
+
+# install sphinx osx
+
+re: https://github.com/vscode-restructuredtext/vscode-restructuredtext/blob/master/docs/sphinx.md
+
+`ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/opt/openssl/lib" CFLAGS="-I/usr/local/opt/openssl/include" pip3 install sphinx sphinx-autobuild`
