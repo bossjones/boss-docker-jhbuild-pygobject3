@@ -5,7 +5,7 @@ cat <<EOF > /home/pi/.execline-shell
 #!/usr/bin/execlineb -S0
 
 # Eg. /home/pi
-import HOME
+importas HOME HOME
 
 # $ENV is $HOME/.shrc in newer versions of the Bourne Shell
 # source: https://en.wikipedia.org/wiki/Unix_shell

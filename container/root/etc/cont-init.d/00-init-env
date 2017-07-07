@@ -31,6 +31,8 @@ multisubstitute {
     import -D "1000" GID
 }
 # Set uid to 1000 now
+# NOTE: s6-env -i program
+# -i Invoke utility with exactly the environment specified by the arguments; the inherited environment shall be ignored completely.
 foreground {
     s6-env -i
     UID=$UID

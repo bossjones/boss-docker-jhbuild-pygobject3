@@ -11,14 +11,16 @@ esac
 
 . $ENV.$SYSTEM
 
-for i in $ENVD/*.sh; do
-  test -x $i && . $i
-done
-unset i
+# where ENVD = $HOME/.sh
+# for i in $ENVD/*.sh; do
+#   test -x $i && . $i
+# done
+# unset i
 
-lsc on
 
-eval "`rbenv init -`"
+# lsc on
+
+# eval "`rbenv init -`"
 
 trap -- 'test -r $HOME/.logout && . $HOME/.logout' EXIT
 EOF
