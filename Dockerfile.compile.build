@@ -265,40 +265,46 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         file \
                         rsync \
                         # vim for debugging
+                        # vim for debugging
                         vim \
                         source-highlight \
                         fortune \
-                        ##########################################################
-                        # needed to fix *.html issues
-                        ##########################################################
-                        libxft2-dbg \
-                        libsmdev-dev \
-                        asciidoctor \
-                        markdown \
-                        libghc-cmark-prof \
-                        libghc-markdown-prof \
-                        libmarkdown2-dev \
-                        libpod-markdown-perl \
-                        libhtml-wikiconverter-markdown-perl \
-                        libsoldout1-dev \
-                        libtext-markdown-discount-perl \
-                        libtext-markdown-perl \
-                        libtext-multimarkdown-perl \
-                        # Note, some of these python packages we might need to use pip to install it in future
-                        python-html2text \
-                        python-markdown \
-                        python-mistune \
-                        python3-html2text \
-                        python3-markdown \
-                        python3-misaka \
-                        python3-mistune \
-                        linuxdoc-tools \
-                        linuxdoc-tools-info \
-                        linuxdoc-tools-latex \
-                        linuxdoc-tools-text \
-                        ##########################################################
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
+         apt-get clean && \
+         apt-get autoclean -y && \
+         apt-get autoremove -y && \
+         rm -rf /var/lib/{cache,log}/ && \
+         rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+
+##########################################################
+# needed to fix *.html issues
+##########################################################
+RUN apt-get update -y && \
+    export LANG=en_US.UTF-8 && \
+    apt-get install -y asciidoctor \
+                         libghc-cmark-prof \
+                         libghc-markdown-prof \
+                         libhtml-wikiconverter-markdown-perl \
+                         libmarkdown2-dev \
+                         libpod-markdown-perl \
+                         libsmdev-dev \
+                         libsoldout1-dev \
+                         libtext-markdown-discount-perl \
+                         libxft2-dbg \
+                         linuxdoc-tools \
+                         linuxdoc-tools-info \
+                         linuxdoc-tools-latex \
+                         linuxdoc-tools-text \
+                         markdown \
+                         python-html2text \
+                         python-markdown \
+                         python-mistune \
+                         python3-html2text \
+                         python3-markdown \
+                         python3-misaka \
+                         python3-mistune && \
          apt-get clean && \
          apt-get autoclean -y && \
          apt-get autoremove -y && \
