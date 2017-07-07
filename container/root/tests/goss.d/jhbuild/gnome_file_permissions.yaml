@@ -1,0 +1,92 @@
+---
+file:
+  /home/pi/gnome:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/pocketsphinx:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/sphinxbase:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gst-plugins-espeak-0.4.0:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gst-libav-1.8.2:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gst-plugins-bad-1.8.2:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gst-plugins-ugly-1.8.2:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gst-plugins-good-1.8.2:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gst-plugins-base-1.8.2:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/orc-0.4.25:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gstreamer-1.8.2:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/pygobject:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gobject-introspection:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/glib:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory
+  /home/pi/gnome/gtk-doc:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory

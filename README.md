@@ -9,6 +9,13 @@ Gnome x Jhbuild x PyGObject x Cmusphinx x Gtk+3 in 🐳
 [![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./CONTRIBUTING.md)
 [![LICENSE](https://img.shields.io/badge/license-Apache-blue.svg?style=flat-square)](./LICENSE)
 
+
+# Jhbuild PyGObject3 Docker Image ([Dockerfile](https://github.com/bossjones/boss-docker-jhbuild-pygobject3))
+[![](https://images.microbadger.com/badges/image/bossjones/boss-docker-jhbuild-pygobject3.svg)](https://microbadger.com/images/bossjones/boss-docker-jhbuild-pygobject3 "Get your own image badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/bossjones/boss-docker-jhbuild-pygobject3.svg)](https://microbadger.com/images/bossjones/boss-docker-jhbuild-pygobject3 "Get your own version badge on microbadger.com")
+[![](https://images.microbadger.com/badges/commit/bossjones/boss-docker-jhbuild-pygobject3.svg)](https://microbadger.com/images/bossjones/boss-docker-jhbuild-pygobject3 "Get your own commit badge on microbadger.com")
+[![](https://images.microbadger.com/badges/license/bossjones/boss-docker-jhbuild-pygobject3.svg)](https://microbadger.com/images/bossjones/boss-docker-jhbuild-pygobject3 "Get your own license badge on microbadger.com")
+
 NOTE: This is a prereq for `scarlett_os`. It makes some strong assumptions about how you plan on running jhbuild, and should mainly just run on CI systems.
 
 Docker container that installs an jhbuild environment that has the following:

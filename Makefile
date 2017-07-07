@@ -257,4 +257,14 @@ dev-clean:
 sort-by-size:
 	@du -hs * | gsort -h
 
+data-volume-up:
+	# set -x; docker create -v $(pwd)/jhbuild_ccache:/ccache --name ccache ubuntu:16.04 /bin/true
+	docker volume create --name ccache
+
+data-volume-rm:
+	docker volume rm ccache
+
+docker-dev:
+	docker-compose -f docker-compose.compile.yml -f ci_build_v2.yml up --build
+
 include commands/make/*.mk

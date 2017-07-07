@@ -58,4 +58,15 @@ foreground {
     s6-applyuidgid -u 1000 -g 1000 env
 }
 
-# s6-applyuidgid -u 1000 -g 1000 umask 022 ${HOME}/.local/bin/env-setup ${XDG_RUNTIME_DIR}/env
+# NOTE: These guys are new and might break everything
+foreground {
+    mkdir -p ${XDG_RUNTIME_DIR}/env
+}
+
+foreground {
+    s6-applyuidgid -u 1000 -g 1000 umask 022 ${HOME}/.local/bin/env-setup
+}
+
+foreground {
+    chown pi:pi -R ${XDG_RUNTIME_DIR}/env
+}

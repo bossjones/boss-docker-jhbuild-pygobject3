@@ -258,6 +258,16 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         libxslt1-dev \
                         graphviz \
                         openssh-server \
+                        # optimize compiling
+                        gperf \
+                        bc \
+                        ccache \
+                        file \
+                        rsync \
+                        # vim for debugging
+                        vim \
+                        source-highlight \
+                        fortune \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
          apt-get clean && \
@@ -436,6 +446,38 @@ COPY ./container/root /
 RUN mkdir -p /home/pi/.local/bin \
     && cp -a /env-setup /home/pi/.local/bin/env-setup \
     && chmod +x /home/pi/.local/bin/env-setup
+
+# NOTE: This should get around any docker permission issues we normally have
+RUN cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+    && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+    && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+
+# TODO: Need this ccache
+# FIXME: This needs to be duplicated in the env-setup script, etc
+ENV CCACHE_DIR /ccache
+
+# TODO: before building should help with some macro issues
+# FIXME: This needs to be duplicated in the env-setup script, etc
+# /home/pi/jhbuild/share/aclocal
+ENV ACLOCAL_FLAGS "-I ${PREFIX}/share/aclocal"
+
+# FIXME: Do we need to add this to jhbuildrc?
+# os.environ['LDFLAGS'] = "-L" + prefix + "/lib" (in .jhbuildrc) helps if libtool picks up the wrong static libraries.
+
+# TODO: ccache.conf
+RUN mkdir -p /ccache && \
+    echo "max_size = 5.0G" > /ccache/ccache.conf && \
+    chown -R ${UNAME}:${UNAME} /ccache
+
+# NOTE: Temp run install as pi user
+USER $UNAME
+
+RUN bash /prep-pi.sh
+# Install jhbuild stuff
+RUN bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+
+# NOTE: Return to root user when finished
+USER root
 
 RUN bash /prep-pi.sh
 

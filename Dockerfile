@@ -283,6 +283,8 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         rsync \
                         # vim for debugging
                         vim \
+                        source-highlight \
+                        fortune \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
          apt-get clean && \
@@ -658,11 +660,30 @@ RUN cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbui
     && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
     && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh
 
+# TODO: Need this ccache
+# FIXME: This needs to be duplicated in the env-setup script, etc
+ENV CCACHE_DIR /ccache
+
+# source: https://wiki.gnome.org/Projects/Jhbuild/Dependencies/Debian#Debian_Stretch_.28testing.29
+# TODO: before building should help with some macro issues
+# FIXME: This needs to be duplicated in the env-setup script, etc
+# /home/pi/jhbuild/share/aclocal
+ENV ACLOCAL_FLAGS "-I ${PREFIX}/share/aclocal"
+
+# FIXME: Do we need to add this to jhbuildrc?
+# os.environ['LDFLAGS'] = "-L" + prefix + "/lib" (in .jhbuildrc) helps if libtool picks up the wrong static libraries.
+
+# TODO: ccache.conf
+RUN mkdir -p /ccache && \
+    echo "max_size = 5.0G" > /ccache/ccache.conf && \
+    chown -R ${UNAME}:${UNAME} /ccache
+
 # NOTE: Temp run install as pi user
 USER $UNAME
 
+RUN bash /prep-pi.sh
 # Install jhbuild stuff
-RUN bash /prep-pi.sh && bash /scripts/compile_jhbuild_and_deps.sh
+RUN bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
 
 # NOTE: Return to root user when finished
 USER root

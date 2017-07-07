@@ -17,7 +17,7 @@
     // The command line arguments to use when on the OS X terminal.
     // "terminal.integrated.shellArgs.osx": [],
     "workbench.iconTheme": "material-icon-theme",
-    "window.zoomLevel": -1,
+    "window.zoomLevel": 0,
     "workbench.colorTheme": "Material Theme Palenight",
     "files.insertFinalNewline": true,
 
