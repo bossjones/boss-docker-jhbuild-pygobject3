@@ -52,6 +52,33 @@ ENV LC_ALL     en_US.UTF-8
 # ensure local python is preferred over distribution python
 ENV PATH /usr/local/bin:/usr/local/sbin:$PATH
 
+# lets install apt-fast
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:saiarcot895/myppa < /dev/null && \
+    apt-get update && \
+    echo debconf apt-fast/maxdownloads string 16 | debconf-set-selections; \
+    echo debconf apt-fast/dlflag boolean true | debconf-set-selections; \
+    echo debconf apt-fast/aptmanager string apt-get |  debconf-set-selections; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
+    sed -i'' "/^_DOWNLOADER=/ s/-m0/-m0 \
+    --quiet \
+    --console-log-level=error \
+    --show-console-readout=false \
+    --summary-interval=10 \
+    --enable-rpc \
+    --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
+    apt-fast update && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoclean -y && \
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
 

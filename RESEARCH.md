@@ -2559,3 +2559,44 @@ ERROR: Service 'jhbuild_pygobject3' failed to build: The command '/bin/sh -c bas
 re: https://github.com/vscode-restructuredtext/vscode-restructuredtext/blob/master/docs/sphinx.md
 
 `ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/opt/openssl/lib" CFLAGS="-I/usr/local/opt/openssl/include" pip3 install sphinx sphinx-autobuild`
+
+
+# tested apt-fast w/ this ( assume vanilla xenial )
+
+```
+# Prepare packaging environment
+export DEBIAN_FRONTEND=noninteractive
+
+# make apt use ipv4 instead of ipv6 ( faster resolution )
+sed -i "s@^#precedence ::ffff:0:0/96  100@precedence ::ffff:0:0/96  100@" /etc/gai.conf && apt-get update
+
+# Install language pack before setting env vars to utf-8
+
+apt-get update && \
+apt-get -y upgrade && \
+apt-get install -y \
+language-pack-en-base && \
+apt-get clean && \
+apt-get autoclean -y && \
+apt-get autoremove -y && \
+rm -rf /var/lib/{cache,log}/ && \
+rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# # Ensure UTF-8 lang and locale
+locale-gen en_US.UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# ensure local python is preferred over distribution python
+export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+
+apt-get update && \
+apt-get install -y software-properties-common && \
+add-apt-repository -y ppa:saiarcot895/myppa < /dev/null && \
+apt-get update && \
+echo debconf apt-fast/maxdownloads string 16 | debconf-set-selections; \
+echo debconf apt-fast/dlflag boolean true | debconf-set-selections; \
+echo debconf apt-fast/aptmanager string apt-get |  debconf-set-selections; \
+DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
+apt-fast update
+```

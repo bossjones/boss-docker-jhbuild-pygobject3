@@ -97,12 +97,38 @@ then update && upgrade and install
 # apt-fast
 
 ```
+# bossjones implementation
+
+apt-get update && \
 apt-get install -y software-properties-common && \
-add-apt-repository ppa:saiarcot895/myppa && \
+add-apt-repository -y ppa:saiarcot895/myppa && \
 apt-get update && \
 echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
 echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
 apt-get -y install apt-fast && \
 apt-fast update
+```
 
+```
+# another implementation bossjones
+# source: https://github.com/ilikenwf/apt-fast/issues/85
+
+apt-get update && \
+apt-get install -y software-properties-common && \
+add-apt-repository -y ppa:saiarcot895/myppa < /dev/null && \
+apt-get update && \
+echo debconf apt-fast/maxdownloads string 16 | debconf-set-selections; \
+echo debconf apt-fast/dlflag boolean true | debconf-set-selections; \
+echo debconf apt-fast/aptmanager string apt-get |  debconf-set-selections; \
+apt-get install -y apt-fast && \
+apt-fast update
+```
+
+```
+add-apt-repository ppa:saiarcot895/myppa < /dev/null
+apt-get update
+echo debconf apt-fast/maxdownloads string 16 | sudo debconf-set-selections
+echo debconf apt-fast/dlflag boolean true | sudo debconf-set-selections
+echo debconf apt-fast/aptmanager string apt-get | sudo debconf-set-selections
+sudo apt-get install -y apt-fast
 ```

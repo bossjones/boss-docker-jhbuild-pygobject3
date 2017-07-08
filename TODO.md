@@ -22,3 +22,7 @@ cp: cannot create regular file '/artifacts/gnome/sphinxbase/.git/objects/pack/pa
 ^C
 [pi@ce2b1e277563 cont-init.d] $
 ```
+
+5. re: farstream-0.2: FTBFS: mv: cannot stat 'html/index.sgml': No such file or directory (Debian Bug report logs - #822387)
+
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=822387
