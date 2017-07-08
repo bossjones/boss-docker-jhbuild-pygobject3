@@ -133,6 +133,10 @@ echo debconf apt-fast/aptmanager string apt-get | sudo debconf-set-selections
 sudo apt-get install -y apt-fast
 ```
 
+# testing on jenkins
+
+`export NO_PROXY=* && docker-compose -f docker-compose.compile.yml -f ci_build_v2.yml up --build`
+
 # jhbuild issues
 
 https://wiki.gnome.org/action/show/Projects/Jhbuild/Issues?action=show&redirect=JhbuildIssues
@@ -142,7 +146,7 @@ https://wiki.gnome.org/psychoslave/installing
 http://worldofgnome.org/how-to-easily-install-the-very-latest-gnome-in-any-distro-with-jhbuild/
 
 
-Make sure the PKG_CONFIG_PATH environment variable is set correctly.
+Make sure the `PKG_CONFIG_PATH` environment variable is set correctly.
 
 Find all the locations where .pc files are stored:
 
