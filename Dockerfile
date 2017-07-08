@@ -53,13 +53,21 @@ ENV LC_ALL     en_US.UTF-8
 ENV PATH /usr/local/bin:/usr/local/sbin:$PATH
 
 # lets install apt-fast
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:saiarcot895/myppa < /dev/null && \
+RUN set -x \
+    ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata && \
+    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    echo 'LANG="en_US.UTF-8"' > /etc/default/locale && \
+    dpkg-reconfigure -f noninteractive locales && \
+    update-locale LANG=en_US.UTF-8 && \
+
     apt-get update && \
-    echo debconf apt-fast/maxdownloads string 16 | debconf-set-selections; \
-    echo debconf apt-fast/dlflag boolean true | debconf-set-selections; \
-    echo debconf apt-fast/aptmanager string apt-get |  debconf-set-selections; \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:saiarcot895/myppa && \
+    apt-get update && \
+    echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
+    echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
+    echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
     sed -i'' "/^_DOWNLOADER=/ s/-m0/-m0 \
     --quiet \
@@ -68,6 +76,7 @@ RUN apt-get update && \
     --summary-interval=10 \
     --enable-rpc \
     --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
+    # sed -i "/^_DOWNLOADER=/ s/-m0/-m0 --quiet --console-log-level=error --show-console-readout=false --summary-interval=10 --enable-rpc --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
     apt-fast update && \
     # now that apt-fast is setup, lets clean everything in this layer
     apt-fast autoremove -y && \
@@ -323,9 +332,9 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
 ##########################################################
 # needed to fix *.html issues
 ##########################################################
-RUN apt-get update -yqq && \
+RUN apt-fast update -y && \
     export LANG=en_US.UTF-8 && \
-    apt-get install -yqq asciidoctor \
+    apt-fast install -y asciidoctor \
                          libghc-cmark-prof \
                          libghc-markdown-prof \
                          libhtml-wikiconverter-markdown-perl \
@@ -346,12 +355,23 @@ RUN apt-get update -yqq && \
                          python3-html2text \
                          python3-markdown \
                          python3-misaka \
+                         # specifics gtk-doc
+                         docbook-utils \
+                         docbook-xsl \
+                         docbook-simple \
+                         docbook-to-man \
+                         docbook-dsssl \
+                         jade \
                          python3-mistune && \
-         apt-get clean && \
-         apt-get autoclean -y && \
-         apt-get autoremove -y && \
-         rm -rf /var/lib/{cache,log}/ && \
-         rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+    apt-fast update && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
 # source: https://docs.docker.com/engine/examples/running_ssh_service/
 

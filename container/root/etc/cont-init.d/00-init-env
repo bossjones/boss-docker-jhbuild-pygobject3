@@ -56,8 +56,13 @@ foreground {
 foreground {
     s6-echo " [run] Get env vars directly from pi user"
 }
+
 foreground {
     s6-applyuidgid -u 1000 -g 1000 env
+}
+
+foreground {
+    s6-echo " [run] mkdir -p ${XDG_RUNTIME_DIR}/env"
 }
 
 # NOTE: These guys are new and might break everything
@@ -66,11 +71,31 @@ foreground {
 }
 
 foreground {
-    chown pi:pi -R ${XDG_RUNTIME_DIR}/env
+    s6-echo " [run] s6-sudo chown pi:pi -R ${XDG_RUNTIME_DIR}"
 }
 
 foreground {
-    s6-dumpenv -- ${XDG_RUNTIME_DIR}/env
+    s6-sudo chown pi:pi -R ${XDG_RUNTIME_DIR}
+}
+
+foreground {
+    s6-echo " [run] s6-sudo chown pi:pi -R ${XDG_RUNTIME_DIR}/env"
+}
+
+foreground {
+    s6-sudo chown pi:pi -R ${XDG_RUNTIME_DIR}/env
+}
+
+foreground {
+    s6-echo " [run] s6-applyuidgid -u 1000 -g 1000 umask 022 s6-dumpenv -- ${XDG_RUNTIME_DIR}/env"
+}
+
+foreground {
+    s6-applyuidgid -u 1000 -g 1000 umask 022 s6-dumpenv -- ${XDG_RUNTIME_DIR}/env
+}
+
+foreground {
+    s6-echo " [run] s6-applyuidgid -u 1000 -g 1000 umask 022 ${HOME}/.local/bin/env-setup"
 }
 
 # s6-dumpenv -- $XDG_RUNTIME_DIR/env

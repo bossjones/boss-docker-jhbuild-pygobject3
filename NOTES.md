@@ -132,3 +132,25 @@ echo debconf apt-fast/dlflag boolean true | sudo debconf-set-selections
 echo debconf apt-fast/aptmanager string apt-get | sudo debconf-set-selections
 sudo apt-get install -y apt-fast
 ```
+
+# jhbuild issues
+
+https://wiki.gnome.org/action/show/Projects/Jhbuild/Issues?action=show&redirect=JhbuildIssues
+
+https://wiki.gnome.org/psychoslave/installing
+
+http://worldofgnome.org/how-to-easily-install-the-very-latest-gnome-in-any-distro-with-jhbuild/
+
+
+Make sure the PKG_CONFIG_PATH environment variable is set correctly.
+
+Find all the locations where .pc files are stored:
+
+`for f in $(locate *.pc); do dirname $f; done | uniq`
+
+For each location add it to your jhbuildrc like so:
+
+```
+addpath('PKG_CONFIG_PATH', '/directory/to/pc/files')
+addpath('PKG_CONFIG_PATH', '/other/pc/files/live/here')
+```

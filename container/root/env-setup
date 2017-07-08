@@ -10,8 +10,10 @@
 outdir=${1:-${XDG_RUNTIME_DIR}/env}
 
 envvar() {
+  ls -lta "${outdir}"
   # if file doesn't exist in /run/user/1000/env, create it
   test -d "${outdir}/${1}" || touch "${outdir}/${1}"
+  chown pi:pi "${outdir}/${1}"
   export "${1}=${2}"
   printf '%s'  "$2" > "${outdir}/${1}"
 }
