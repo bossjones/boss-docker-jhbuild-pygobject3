@@ -54,13 +54,6 @@ ENV PATH /usr/local/bin:/usr/local/sbin:$PATH
 
 # lets install apt-fast
 RUN set -x \
-    ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
-    dpkg-reconfigure -f noninteractive tzdata && \
-    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-    echo 'LANG="en_US.UTF-8"' > /etc/default/locale && \
-    dpkg-reconfigure -f noninteractive locales && \
-    update-locale LANG=en_US.UTF-8 && \
-
     apt-get update && \
     apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:saiarcot895/myppa && \
@@ -69,13 +62,12 @@ RUN set -x \
     echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
     echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
-    sed -i'' "/^_DOWNLOADER=/ s/-m0/-m0 \
-    --quiet \
-    --console-log-level=error \
-    --show-console-readout=false \
-    --summary-interval=10 \
-    --enable-rpc \
-    --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
+    # sed -i'' "/^_DOWNLOADER=/ s/-m0/-m0 \
+    # --quiet \
+    # --console-log-level=error \
+    # --show-console-readout=false \
+    # --summary-interval=10 \
+    # --enable-rpc/" /etc/apt-fast.conf && \
     # sed -i "/^_DOWNLOADER=/ s/-m0/-m0 --quiet --console-log-level=error --show-console-readout=false --summary-interval=10 --enable-rpc --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
     apt-fast update && \
     # now that apt-fast is setup, lets clean everything in this layer
@@ -86,6 +78,9 @@ RUN set -x \
     apt-get autoremove -y && \
     rm -rf /var/lib/{cache,log}/ && \
     rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# this is what we need to sed
+# _DOWNLOADER='aria2c -c -j ${_MAXNUM} -x ${_MAXNUM} -s ${_MAXNUM} --min-split-size=1M -i ${DLLIST} --connect-timeout=600 --timeout=600 -m0'
 
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
@@ -198,14 +193,14 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
     add-apt-repository -y ppa:gnome3-team/gnome3 && \
     add-apt-repository -y ppa:gnome3-team/gnome3-staging && \
     add-apt-repository -y ppa:pitti/systemd-semaphore && \
-    apt-get update -yqq && \
-    apt-get upgrade -yqq && \
+    apt-fast update -yqq && \
+    apt-fast upgrade -yqq && \
     export LANG=en_US.UTF-8 && \
-    apt-get install -qqy libpulse-dev espeak && \
+    apt-fast install -qqy libpulse-dev espeak && \
     apt-cache search --names-only '^(lib)?gstreamer1.0\S*' | sed 's/\(.*\) -.*/\1 /' | grep -iv "Speech"  > dependencies && \
     cat dependencies && \
-    apt-get build-dep -y `cat dependencies` && \
-    apt-get install -qqy gnome-common \
+    apt-fast build-dep -y `cat dependencies` && \
+    apt-fast install -qqy gnome-common \
                         gtk-doc-tools \
                         libgtk-3-dev \
                         libgirepository1.0-dev \
@@ -317,16 +312,21 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         file \
                         rsync \
                         # vim for debugging
+                        # vim for debugging
                         vim \
                         source-highlight \
                         fortune \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
-         apt-get clean && \
-         apt-get autoclean -y && \
-         apt-get autoremove -y && \
-         rm -rf /var/lib/{cache,log}/ && \
-         rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+    apt-fast update && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
 
 ##########################################################
