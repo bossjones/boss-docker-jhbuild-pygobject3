@@ -117,26 +117,37 @@ ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
 
 # lets install apt-fast
-RUN \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:saiarcot895/myppa < /dev/null && \
-    apt-get update && \
-    echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
+    add-apt-repository -y ppa:saiarcot895/myppa && \
+    apt-get update
+    # && \
+
+RUN echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
     echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
     echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast
+    # && \
     # sed -i "/^_DOWNLOADER=/ s/-m0/-m0 --quiet --console-log-level=error --show-console-readout=false --summary-interval=10 --enable-rpc --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
-    apt-fast update && \
-    # now that apt-fast is setup, lets clean everything in this layer
-    apt-fast autoclean -y && \
-    apt-fast autoremove -y && \
-    # now clean regular apt-get stuff
-    apt-get clean && \
+
+RUN apt-fast update
+
+RUN apt-fast autoremove -y
+RUN apt-get clean && \
     apt-get autoclean -y && \
     apt-get autoremove -y && \
     rm -rf /var/lib/{cache,log}/ && \
     rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# RUN apt-fast update && \
+#     # now that apt-fast is setup, lets clean everything in this layer
+#     apt-fast autoremove -y && \
+#     # now clean regular apt-get stuff
+#     apt-get clean && \
+#     apt-get autoclean -y && \
+#     apt-get autoremove -y && \
+#     rm -rf /var/lib/{cache,log}/ && \
+#     rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
 # this is what we need to sed
 # _DOWNLOADER='aria2c -c -j ${_MAXNUM} -x ${_MAXNUM} -s ${_MAXNUM} --min-split-size=1M -i ${DLLIST} --connect-timeout=600 --timeout=600 -m0'

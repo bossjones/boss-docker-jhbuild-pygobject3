@@ -70,7 +70,6 @@ RUN apt-get update && \
     --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
     apt-fast update && \
     # now that apt-fast is setup, lets clean everything in this layer
-    apt-fast autoclean -y && \
     apt-fast autoremove -y && \
     # now clean regular apt-get stuff
     apt-get clean && \
