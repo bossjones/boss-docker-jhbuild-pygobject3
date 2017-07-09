@@ -153,4 +153,7 @@ else
     # if we don't need to re-build
     echo "****************[HEY GUESS WHAT]****************"
     echo "****************[JHBUILD IS RDY]****************"
+    [[ ! -f "/usr/local/bin/jhbuild" ]] && echo 'TRUE: ! -f "/usr/local/bin/jhbuild"' || echo 'FALSE: ! -f "/usr/local/bin/jhbuild"'
+    [[ -f "/home/pi/jhbuild/autogen.sh" ]] && echo 'TRUE: -f "/home/pi/jhbuild/autogen.sh"' || echo 'FALSE: -f "/home/pi/jhbuild/autogen.sh"'
+    [[ $FORCE_BUILD_JHBUILD = 1 ]] && echo 'TRUE: $FORCE_BUILD_JHBUILD = 1' || echo 'FALSE: $FORCE_BUILD_JHBUILD = 1'
 fi
