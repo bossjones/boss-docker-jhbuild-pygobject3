@@ -105,12 +105,29 @@ test-bak:
 # Note: /bin/true - returns a 0 and does nothing if the command was successful.
 create-artifact-volume:
 	@docker create -v /jhbuild-artifact --name jhbuild-artifact bossjones/boss-docker-python3:latest /bin/true
+# vagrant@scarlett-travis:~/dev/bossjones-github/boss-docker-jhbuild-pygobject3$ docker ps -a
+# CONTAINER ID        IMAGE                                            COMMAND               CREATED              STATUS                       PORTS               NAMES
+# fabb91c8324d        bossjones/boss-docker-python3:latest             "/bin/true"           About a minute ago   Created                                          jhbuild-artifact
+# 84864eb8ad6f        bossdockerjhbuildpygobject3_jhbuild_pygobject3   "/bin/bash /run.sh"   7 hours ago          Exited (137) 2 minutes ago                       bossdockerjhbuildpygobject3_jhbuild_pygobject3_1
+# vagrant@scarlett-travis:~/dev/bossjones-github/boss-docker-jhbuild-pygobject3$
+
+# TODO: Finish this up, these are the steps and proof this works
+# copy-gnome-to-volume:
+# vagrant@scarlett-travis:~/dev/bossjones-github/boss-docker-jhbuild-pygobject3$ docker run -d -i -t --volumes-from jhbuild-artifact --name database-container-1 bossjones/boss-docker-python3:latest bash
+# 1192106ba9af7f56992aa3ca0a93040669dc353c46571f14e8d2ce8e9e907328
+# vagrant@scarlett-travis:~/dev/bossjones-github/boss-docker-jhbuild-pygobject3$ docker cp artifacts/gnome database-container-1:/jhbuild-artifact/gnome
+# vagrant@scarlett-travis:~/dev/bossjones-github/boss-docker-jhbuild-pygobject3$ docker cp artifacts/jhbuild database-container-1:/jhbuild-artifact/jhbuild
+# vagrant@scarlett-travis:~/dev/bossjones-github/boss-docker-jhbuild-pygobject3$
+# step 1. create data volume container
+# step 2. create docker run command that uses volumes-from command
+# step 3. copy cached values over to docker volume
+# step 4. run unit tests
 
 create-ccache-volume:
-	@ls -lta
+	@docker create -v /jhbuild-ccache --name jhbuild-ccache bossjones/boss-docker-python3:latest /bin/true
 
 create-pip-cache-volume:
-	@ls -lta
+	@docker create -v /jhbuild-pip-cache --name jhbuild-pip-cache bossjones/boss-docker-python3:latest /bin/true
 
 docker-compose-build:
 	@docker-compose -f docker-compose-devtools.yml build
