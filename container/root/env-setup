@@ -7,10 +7,10 @@
 # vim: expandtab:sts=2:sw=2:ts=8:tw=100
 #
 
+# FIXME: Lets make this default to something sane, eg ${XDG_RUNTIME_DIR:-/run/user/1000}
 outdir=${1:-${XDG_RUNTIME_DIR}/env}
 
 envvar() {
-  ls -lta "${outdir}"
   # if file doesn't exist in /run/user/1000/env, create it
   test -d "${outdir}/${1}" || touch "${outdir}/${1}"
   chown pi:pi "${outdir}/${1}"
@@ -128,8 +128,9 @@ envvar PAGER            "less"
 # envvar USER_SSH_PUBKEY "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key"
 # envvar HOME "/home/$UNAME"
 
-
-########## GENERATED ####################
+######################################################################################
+# FIXME: We should change this to something more dramatic. Stop using hardcoded
+######################################################################################
 
 envvar CC "gcc"
 envvar CFLAGS "-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer"
@@ -186,7 +187,7 @@ envvar SERVER_WORKER_PROCESSES "1"
 # envvar SHLVL "1"
 envvar SIGNAL_BUILD_STOP "99"
 envvar SKIP_ON_TRAVIS "yes"
-envvar TERM "xterm"
+envvar TERM "xterm-256color"
 envvar TRAVIS_CI "false"
 envvar UNAME "pi"
 envvar USER_HOME "/home/pi"

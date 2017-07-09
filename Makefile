@@ -94,6 +94,24 @@ list:
 test:
 	@docker-compose -f docker-compose.yml -f ci_build.yml up --build
 
+test-bak:
+	@docker-compose -f docker-compose.bak.yml -f ci_build_v2.yml up --build
+
+# 4 – Creating Dedicated Data Volume Containers
+# source: http://www.tricksofthetrades.net/2016/03/14/docker-data-volumes/
+# A popular practice with Docker data sharing is to create a dedicated container that holds all of your persistent shareable data resources,
+# mounting the data inside of it into other containers once created and setup.
+# This example taken from the Docker documentation uses the postgres SQL training image as a base for the data volume container.
+# Note: /bin/true - returns a 0 and does nothing if the command was successful.
+create-artifact-volume:
+	@docker create -v /jhbuild-artifact --name jhbuild-artifact bossjones/boss-docker-python3:latest /bin/true
+
+create-ccache-volume:
+	@ls -lta
+
+create-pip-cache-volume:
+	@ls -lta
+
 docker-compose-build:
 	@docker-compose -f docker-compose-devtools.yml build
 
@@ -259,7 +277,7 @@ sort-by-size:
 
 data-volume-up:
 	# set -x; docker create -v $(pwd)/jhbuild_ccache:/ccache --name ccache ubuntu:16.04 /bin/true
-	docker volume create --name ccache
+	docker volume create --name ccache_jhbuild
 
 data-volume-rm:
 	docker volume rm ccache

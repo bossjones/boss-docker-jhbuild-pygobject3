@@ -70,13 +70,6 @@ RUN set -x \
     echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
     echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
-    # sed -i'' "/^_DOWNLOADER=/ s/-m0/-m0 \
-    # --quiet \
-    # --console-log-level=error \
-    # --show-console-readout=false \
-    # --summary-interval=10 \
-    # --enable-rpc/" /etc/apt-fast.conf && \
-    # sed -i "/^_DOWNLOADER=/ s/-m0/-m0 --quiet --console-log-level=error --show-console-readout=false --summary-interval=10 --enable-rpc --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
     apt-fast update && \
     # now that apt-fast is setup, lets clean everything in this layer
     apt-fast autoremove -y && \

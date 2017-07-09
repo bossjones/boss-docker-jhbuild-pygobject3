@@ -67,24 +67,7 @@ foreground {
 
 # NOTE: These guys are new and might break everything
 foreground {
-    # s6-applyuidgid -u 0 -g 0 mkdir -p ${XDG_RUNTIME_DIR}/env
     s6-envuidgid root mkdir -p ${XDG_RUNTIME_DIR}/env
-}
-
-foreground {
-    s6-echo " [run] ls -lta ${XDG_RUNTIME_DIR}"
-}
-
-foreground {
-    s6-envuidgid root ls -lta ${XDG_RUNTIME_DIR}
-}
-
-foreground {
-    s6-echo " [run] ls -lta ${XDG_RUNTIME_DIR}/env"
-}
-
-foreground {
-    s6-envuidgid root ls -lta ${XDG_RUNTIME_DIR}/env
 }
 
 foreground {
@@ -114,8 +97,6 @@ foreground {
 foreground {
     s6-echo " [run] s6-applyuidgid -u 1000 -g 1000 umask 022 ${HOME}/.local/bin/env-setup"
 }
-
-# s6-dumpenv -- $XDG_RUNTIME_DIR/env
 
 foreground {
     s6-applyuidgid -u 1000 -g 1000 umask 022 ${HOME}/.local/bin/env-setup

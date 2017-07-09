@@ -2600,3 +2600,12 @@ echo debconf apt-fast/aptmanager string apt-get |  debconf-set-selections; \
 DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
 apt-fast update
 ```
+
+
+# EnvironmentVariables ubuntu default
+
+```
+root@scarlett-travis:/etc# cat /etc/environment
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+root@scarlett-travis:/etc#
+```

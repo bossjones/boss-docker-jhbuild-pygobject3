@@ -1,6 +1,30 @@
 #!/usr/bin/env bash
 
+# The execline-startup script ( runs before calling execline-loginshell )
+
+# execline-startup performs some system-specific login initialization, then executes ${HOME}/.execline-loginshell.
+# execline-startup sets the SHELL environment variable to /etc/execline-shell.
+# It then performs some system-specific initialization,
+# and transforms itself into ${HOME}/.execline-loginshell $@ if available (and /etc/execline-shell otherwise).
+
+# ${HOME}/.execline-loginshell must be readable and executable by the user.
+# It must exec into $SHELL $@.
+
+# execline-startup is an execlineb script; hence, it is readable and modifiable.
+# It is meant to be modified by the system administrator to perform system-specific login-time initialization.
+
+# As a modifiable configuration file,
+# execline-startup is provided in execline's examples/etc/ subdirectory,
+# and should be copied by the administrator to /etc.
+
+# execline-startup is meant to be used as a login shell.
+# System administrators should manually add /etc/execline-startup to the /etc/shells file.
+# The /etc/execline-startup file itself plays the role of the /etc/profile file,
+# and ${HOME}/.execline-loginshell plays the role of the ${HOME}/.profile file.
+
 touch /home/pi/.execline-loginshell
+sudo chown pi:pi /home/pi/.execline-loginshell
+
 cat <<EOF > /home/pi/.execline-loginshell
 #!/usr/bin/execlineb -S0
 
@@ -30,11 +54,13 @@ multisubstitute {
     import -D "1000" UID
     import -D "1000" GID
 }
+
+# Modify the runtime environment variables. These guys live in /run/user/1000/env
 foreground {
     s6-applyuidgid -u 1000 -g 1000 umask 022 ${HOME}/.local/bin/env-setup
 }
 
-# load dynamic environment vars
+# Now that they're generated, load dynamic environment vars
 envdir ${XDG_RUNTIME_DIR}/env
 
 # set GPG_TTY if possible

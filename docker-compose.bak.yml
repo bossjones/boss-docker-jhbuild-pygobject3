@@ -32,12 +32,12 @@ services:
     - ./ccache:/ccache
     ports:
     - "2222:22"
-    # volumes_from:
-    # - ccache
+    volumes_from:
+    - jhbuild-artifact
 
 # volumes:
 #   ccache:
 #     external: true
-# volumes:
-#   ccache:
-#     external: true
+volumes:
+  jhbuild-artifact:
+    external: true

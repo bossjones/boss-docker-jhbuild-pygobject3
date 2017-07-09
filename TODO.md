@@ -26,3 +26,28 @@ cp: cannot create regular file '/artifacts/gnome/sphinxbase/.git/objects/pack/pa
 5. re: farstream-0.2: FTBFS: mv: cannot stat 'html/index.sgml': No such file or directory (Debian Bug report logs - #822387)
 
 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=822387
+
+
+6. `execline-startup` is meant to be used as a login shell. System administrators should manually add `/etc/execline-startup` to the `/etc/shells` file.
+
+
+```
+grep -q '^/etc/execline-startup' /etc/shells || sed -i '/#.*/a \
+/etc/execline-startup' /etc/shells
+```
+
+```
+
+# For example, this file is consulted by chsh to determine whether an unprivileged user may change the login shell for her own account. If the command name is not listed, the user will be denied of change.
+
+# testing
+|2.2.3|   Malcolms-MBP-3 in ~
+[pi@84864eb8ad6f ~] $ sed '/#.*/a \
+> /etc/execline-startup' /etc/shells
+# /etc/shells: valid login shells
+/etc/execline-startup
+/bin/sh
+/bin/dash
+/bin/bash
+/bin/rbash
+````
