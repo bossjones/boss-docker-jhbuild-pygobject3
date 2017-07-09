@@ -3,7 +3,7 @@
 mkdir -p /home/pi/gnome
 
 # Install jhbuild if not done
-if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]] || [[ $FORCE_BUILD_JHBUILD = 1 ]]; then
+if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]] || [[ "${FORCE_BUILD_JHBUILD}" = "" ]]; then
     echo "****************[JHBUILD]****************" && \
     cd /home/pi && \
     if test ! -d /home/pi/jhbuild; then git clone https://github.com/GNOME/jhbuild.git && \
