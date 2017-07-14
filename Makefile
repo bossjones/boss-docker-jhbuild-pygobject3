@@ -224,14 +224,36 @@ container: compile
 	    --build-arg CONTAINER_VERSION=$(CONTAINER_VERSION) \
 	    --build-arg GIT_BRANCH=$(GIT_BRANCH) \
 	    --build-arg GIT_SHA=$(GIT_SHA) \
-	    --SCARLETT_ENABLE_SSHD=0 \
-	    --SCARLETT_ENABLE_DBUS='true' \
-	    --SCARLETT_BUILD_GNOME='true' \
-	    --TRAVIS_CI='true' \
+	    -e SCARLETT_ENABLE_SSHD=0 \
+	    -e SCARLETT_ENABLE_DBUS='true' \
+	    -e SCARLETT_BUILD_GNOME='true' \
+	    -e TRAVIS_CI='true' \
 		--file=Dockerfile.compile.build \
 	    --tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) . ; \
 	docker tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) bossjones/boss-docker-jhbuild-pygobject3:$(TAG)
 
+
+# jhbuild_pygobject3:
+#   build: .
+#   environment:
+#     SERVER_LOG_MINIMAL: 1
+#     SERVER_APP_NAME: jhbuild-pygobject3-ci
+#     image: 'bossjones/boss-docker-jhbuild-pygobject3:latest'
+#     # COMPOSE_PROJECT_NAME: jhbuild-pygobject3-ci
+#     S6_KILL_FINISH_MAXTIME: 1
+#     S6_KILL_GRACETIME: 1
+#     SERVER_WORKER_PROCESSES: 1
+#     # NOTE: This enables SSHD access inside of the container for dev purposes
+#     # 1 = false
+#     # 0 = true
+#     SCARLETT_ENABLE_SSHD: 0
+#     SCARLETT_ENABLE_DBUS: 'true'
+#     SCARLETT_BUILD_GNOME: 'true'
+#     TRAVIS_CI: 'true'
+#   volumes:
+#   - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
+#   ports:
+#   - "2222:22"
 
 # NOTE: In order to find out, whether their code is running inside a docker environment,
 # it was popular to test for the existence of either the /.dockerinit or the /.dockerenv file.
