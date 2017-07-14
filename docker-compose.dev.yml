@@ -4,7 +4,7 @@ services:
   jhbuild_pygobject3:
     build:
       context: .
-      dockerfile: Dockerfile.dev.build
+      dockerfile: Dockerfile.dev
       args:
         SCARLETT_ENABLE_SSHD: 0
         SCARLETT_ENABLE_DBUS: 'true'
