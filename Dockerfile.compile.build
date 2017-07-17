@@ -517,6 +517,9 @@ EXPOSE 22
 # Overlay the root filesystem from this repo
 COPY ./container/root /
 
+# Copy over dotfiles repo, we'll use this later on to init a bunch of thing
+COPY ./dotfiles /dotfiles
+
 RUN mkdir -p /home/pi/.local/bin \
     && cp -a /env-setup /home/pi/.local/bin/env-setup \
     && chmod +x /home/pi/.local/bin/env-setup
@@ -525,6 +528,11 @@ RUN mkdir -p /home/pi/.local/bin \
 RUN cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
     && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
     && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+
+# NOTE: Add dynenv script
+RUN cp -a /scripts/with-dynenv /usr/local/bin/with-dynenv \
+    && chmod +x /usr/local/bin/with-dynenv \
+    && chown pi:pi /usr/local/bin/with-dynenv
 
 # TODO: Need this ccache
 # FIXME: This needs to be duplicated in the env-setup script, etc
@@ -555,6 +563,20 @@ USER root
 
 RUN bash /prep-pi.sh
 
+# NOTE: Prepare XDG_RUNTIME_DIR and everything else
+# we need to run our scripts correctly
+RUN bash /scripts/write_xdg_dir_init.sh "pi"
+RUN bash /scripts/write_xdg_dir_init.sh "root"
+
+# NOTE: Add proper .profile and .bashrc files
+RUN cp -f /dotfiles/profile /home/pi/.profile \
+    && chmod 0644 /home/pi/.profile \
+    && chown pi:pi /home/pi/.profile \
+    && cp -f /dotfiles/bashrc /home/pi/.bashrc \
+    && chmod 0644 /home/pi/.bashrc \
+    && chown pi:pi /home/pi/.bashrc \
+    && cp -a /dotfiles/bash.functions.d/. /home/pi/bash.functions.d/ \
+    && chown pi:pi -R /home/pi/bash.functions.d/
 # FIXME: eventually we might need these guys
 # apt-get install  g++ gdb gdbserver
 

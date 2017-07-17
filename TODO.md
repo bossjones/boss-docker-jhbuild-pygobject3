@@ -51,3 +51,34 @@ grep -q '^/etc/execline-startup' /etc/shells || sed -i '/#.*/a \
 /bin/bash
 /bin/rbash
 ````
+
+7. To get execline-startup working, did the following manually inside container:
+
+a. `cd /scripts`
+
+b. `chmod +x /scripts/*`
+
+c. `bash -x ./write_pi_dotfile_execline-loginshell.sh`
+
+d. `bash -x write_pi_dotfile_execline-shell.sh`
+
+e. `grep -q '^/etc/execline-startup' /etc/shells || sed -i '/#.*/a \
+/etc/execline-startup' /etc/shells`
+
+f. `chmod +x /home/pi/.execline-loginshell /home/pi/.execline-shell`
+
+g. how to test afterwards
+
+```
+d478bc28d79d:~# sudo su - pi /etc/execline-startup
+multisubstitute: usage: see http://skarnet.org/software/execline/multisubstitute.html
+/etc/execline-startup: line 54: export: `/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin': not a valid identifier
+s6-envdir: usage: s6-envdir [ -I | -i ] [ -n ] [ -f ] [ -c nullchar ] dir prog...
+/etc/execline-startup: line 59: export: `/etc/execline-shell': not a valid identifier
+fdblock: usage: fdblock [ -n ] fd prog...
+fdblock: usage: fdblock [ -n ] fd prog...
+fdblock: usage: fdblock [ -n ] fd prog...
+foreground: warning: unable to spawn s6-applyuidgid: Permission denied
+foreground: fatal: unable to wait for s6-applyuidgid: No child process
+d478bc28d79d:~#
+```

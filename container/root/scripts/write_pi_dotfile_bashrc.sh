@@ -139,8 +139,4 @@ for option in autocd globstar; do
   shopt -s "$option" 2> /dev/null
 done
 
-# load custom aliases if they exist
-for i in ~/bash.functions.d/*.sh; do
-  test -x $i && . $i
-done
-unset i
+

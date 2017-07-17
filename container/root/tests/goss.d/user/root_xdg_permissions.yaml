@@ -1,0 +1,44 @@
+---
+# FIXME
+# Can't run this as NON ROOT
+# file:
+#   /root/.cache:
+#     exists: true
+#     mode: "0700"
+#     size: 4096
+#     owner: root
+#     group: root
+#     filetype: directory
+#     contains: []
+#   /root/.config:
+#     exists: true
+#     mode: "0755"
+#     size: 4096
+#     owner: root
+#     group: root
+#     filetype: directory
+#     contains: []
+#   /root/.local/share:
+#     exists: true
+#     mode: "0755"
+#     size: 4096
+#     owner: root
+#     group: root
+#     filetype: directory
+#     contains: []
+#   /run/user/0:
+#     exists: true
+#     mode: "0700"
+#     size: 4096
+#     owner: root
+#     group: root
+#     filetype: directory
+#     contains: []
+#   /run/user/0/env:
+#     exists: true
+#     mode: "0755"
+#     size: 4096
+#     owner: root
+#     group: root
+#     filetype: directory
+#     contains: []
