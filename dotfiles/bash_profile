@@ -97,7 +97,7 @@ alias gw='git whatchanged'
 
 # export PATH="~/.bin:$PATH"
 
-source ~/.super_aliases
+# source ~/.super_aliases
 
 # if [ -f `which powerline-daemon` ]; then
 #   powerline-daemon -q

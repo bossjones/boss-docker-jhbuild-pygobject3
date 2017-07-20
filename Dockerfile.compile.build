@@ -441,6 +441,7 @@ RUN set -xe \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME} \
     && mkdir -p ${MAIN_DIR} \
     && ( mkdir ${PI_HOME}/.ssh \
+        && chmod og-rwx ${PI_HOME}/.ssh \
         && echo "${USER_SSH_PUBKEY}" \
             > ${PI_HOME}/.ssh/authorized_keys \
     ) \
@@ -475,8 +476,7 @@ RUN mkdir -p /root/.ssh && chmod og-rwx /root/.ssh && \
 # - For automated building with private repos only accessible by ssh
 #
 # ********************* PI USER ********************************************
-RUN mkdir -p ${PI_HOME}/.ssh && chmod og-rwx ${PI_HOME}/.ssh && \
-    echo "Host * " > ${PI_HOME}/.ssh/config && \
+RUN echo "Host * " > ${PI_HOME}/.ssh/config && \
     echo "StrictHostKeyChecking no " >> ${PI_HOME}/.ssh/config && \
     echo "UserKnownHostsFile=/dev/null" >> ${PI_HOME}/.ssh/config
 
