@@ -176,10 +176,10 @@ docker_build_and_tag:
 	    --build-arg CONTAINER_VERSION=$(CONTAINER_VERSION) \
 	    --build-arg GIT_BRANCH=$(GIT_BRANCH) \
 	    --build-arg GIT_SHA=$(GIT_SHA) \
-	    -e SCARLETT_ENABLE_SSHD=0 \
-	    -e SCARLETT_ENABLE_DBUS='true' \
-	    -e SCARLETT_BUILD_GNOME='true' \
-	    -e TRAVIS_CI='true' \
+	    --build-arg SCARLETT_ENABLE_SSHD=0 \
+	    --build-arg SCARLETT_ENABLE_DBUS='true' \
+	    --build-arg SCARLETT_BUILD_GNOME='true' \
+	    --build-arg TRAVIS_CI='true' \
 		--file=Dockerfile \
 	    --tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) . ; \
 	docker tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) bossjones/boss-docker-jhbuild-pygobject3:$(TAG) ; \
