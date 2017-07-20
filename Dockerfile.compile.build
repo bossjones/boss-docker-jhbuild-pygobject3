@@ -440,8 +440,7 @@ RUN set -xe \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME} \
     && mkdir -p ${MAIN_DIR} \
-    && ( \
-        && mkdir ${PI_HOME}/.ssh \
+    && ( mkdir ${PI_HOME}/.ssh \
         && echo "${USER_SSH_PUBKEY}" \
             > ${PI_HOME}/.ssh/authorized_keys \
     ) \
@@ -627,7 +626,8 @@ RUN mkdir -p /home/pi/.tmp && \
     chown -R pi:pi /home/pi \
     && \
 
-    # install powershell
+    # install powerline
+    # source: https://github.com/adidenko/powerline
     mkdir -p /home/pi/.tmp && \
     chown pi:pi -R /home/pi/.tmp && \
     cd /home/pi/.tmp && \
