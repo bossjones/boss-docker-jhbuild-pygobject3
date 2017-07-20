@@ -170,6 +170,21 @@ docker_build_latest:
 	--build-arg TRAVIS_CI='true' \
 	-t $(username)/$(container_name):latest .
 
+docker_build_and_tag:
+	set -x ;\
+	docker build \
+	    --build-arg CONTAINER_VERSION=$(CONTAINER_VERSION) \
+	    --build-arg GIT_BRANCH=$(GIT_BRANCH) \
+	    --build-arg GIT_SHA=$(GIT_SHA) \
+	    -e SCARLETT_ENABLE_SSHD=0 \
+	    -e SCARLETT_ENABLE_DBUS='true' \
+	    -e SCARLETT_BUILD_GNOME='true' \
+	    -e TRAVIS_CI='true' \
+		--file=Dockerfile \
+	    --tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) . ; \
+	docker tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) bossjones/boss-docker-jhbuild-pygobject3:$(TAG) ; \
+	docker tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) bossjones/boss-docker-jhbuild-pygobject3:latest
+
 docker_build_compile_jhbuild:
 	@docker build \
 	--build-arg SCARLETT_ENABLE_SSHD=0 \
