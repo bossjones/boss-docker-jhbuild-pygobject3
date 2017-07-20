@@ -667,6 +667,7 @@ RUN mkdir -p /home/pi/.tmp && \
 
     # install powerline
     # source: https://github.com/adidenko/powerline
+    # source: https://ubuntu-mate.community/t/installing-powerline-as-quickly-as-possible/5381
     mkdir -p /home/pi/.tmp && \
     chown pi:pi -R /home/pi/.tmp && \
     cd /home/pi/.tmp && \
