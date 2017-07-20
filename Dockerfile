@@ -471,7 +471,6 @@ RUN set -xe \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME} \
     && mkdir -p ${MAIN_DIR} \
     && ( \
-        umask 077 \
         && mkdir ${PI_HOME}/.ssh \
         && echo "${USER_SSH_PUBKEY}" \
             > ${PI_HOME}/.ssh/authorized_keys \
@@ -485,6 +484,14 @@ RUN set -xe \
     && chown -R pi:pi "$XDG_RUNTIME_DIR" \
     && chmod -R 0700 "$XDG_RUNTIME_DIR"
 
+# FIXME: Note this line here breaks permissions due to umask 077 running as root instead of pi user
+# FIXME: removing for now, 7/20/2017
+# && ( \
+#     umask 077 \
+#     && mkdir ${PI_HOME}/.ssh \
+#     && echo "${USER_SSH_PUBKEY}" \
+#         > ${PI_HOME}/.ssh/authorized_keys \
+# ) \
 
 # Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
 # - For automated building with private repos only accessible by ssh
@@ -775,6 +782,11 @@ RUN bash /prep-pi.sh
 # Install jhbuild stuff
 RUN bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
 
+RUN pip install --user powerline-status && \
+    git config --global core.editor "vim" && \
+    git config --global push.default simple && \
+    git config --global color.ui true
+
 # NOTE: Return to root user when finished
 USER root
 
@@ -785,15 +797,108 @@ RUN bash /prep-pi.sh
 RUN bash /scripts/write_xdg_dir_init.sh "pi"
 RUN bash /scripts/write_xdg_dir_init.sh "root"
 
+# Make sure the ruby2.2 packages are installed (Debian)
+RUN add-apt-repository -y ppa:brightbox/ruby-ng && \
+    apt-fast update -yqq && \
+    export LANG=en_US.UTF-8 && \
+    apt-fast install -qqy ruby2.2 ruby2.2-dev && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# Install powerline deps
+# source: https://hub.docker.com/r/namredips/docker-dev/~/dockerfile/
+RUN apt-fast update -yqq && \
+    export LANG=en_US.UTF-8 && \
+    apt-fast install -y autoconf automake libtool autotools-dev build-essential checkinstall bc ncurses-dev ncurses-term powerline python3-powerline fonts-powerline && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# RUN git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+# RUN vim +PluginInstall +qall
+
+# TODO: bash_it stuff will go here
+# RUN bash /scripts/setup_pi_user_bash_it_and_powerline.sh
+
+# install bash_it and bats
+RUN mkdir -p /home/pi/.tmp && \
+    chown pi:pi -R /home/pi/.tmp && \
+    cd /home/pi/.tmp && \
+    git clone --depth=1 https://github.com/Bash-it/bash-it.git /home/pi/.bash_it && \
+    /home/pi/.bash_it/install.sh --silent --no-modify-config && \
+    git clone --depth 1 https://github.com/sstephenson/bats.git /home/pi/.tmp/bats && \
+    /home/pi/.tmp/bats/install.sh /usr/local && \
+    chown pi:pi -R /usr/local && \
+    chown -R pi:pi /home/pi \
+    && \
+
+    # install powershell
+    mkdir -p /home/pi/.tmp && \
+    chown pi:pi -R /home/pi/.tmp && \
+    cd /home/pi/.tmp && \
+    git clone https://github.com/powerline/fonts.git /home/pi/dev/powerline-fonts \
+    && wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf \
+    && wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf \
+    && mkdir -p /home/pi/.fonts \
+    && mv PowerlineSymbols.otf /home/pi/.fonts/ \
+    && fc-cache -vf /home/pi/.fonts/ \
+    && mkdir -p /home/pi/.config/fontconfig/conf.d/ \
+    && mv 10-powerline-symbols.conf /home/pi/.config/fontconfig/conf.d/ \
+    && touch /home/pi/.screenrc \
+    && sed -i '1i term screen-256color' /home/pi/.screenrc \
+    && git clone https://github.com/adidenko/powerline /home/pi/.config/powerline \
+    && chown -R pi:pi /home/pi \
+    && \
+
+    # rubygem defaults
+    cp -f /dotfiles/gemrc /home/pi/.gemrc \
+    && chmod 0644 /home/pi/.gemrc \
+    && chown pi:pi /home/pi/.gemrc \
+    && \
+
+    # pythonrc defaults
+    cp -f /dotfiles/pythonrc /home/pi/.pythonrc \
+    && chmod 0644 /home/pi/.pythonrc \
+    && chown pi:pi /home/pi/.pythonrc
+
+# RUN pip3 install --upgrade pip
+# RUN pip3 install ipython
+# RUN pip3 install flake8
+# RUN pip3 install pylint
+
 # NOTE: Add proper .profile and .bashrc files
 RUN cp -f /dotfiles/profile /home/pi/.profile \
     && chmod 0644 /home/pi/.profile \
     && chown pi:pi /home/pi/.profile \
+
+    && cp -f /dotfiles/bash_profile /home/pi/.bash_profile \
+    && chmod 0644 /home/pi/.bash_profile \
+    && chown pi:pi /home/pi/.bash_profile \
+
     && cp -f /dotfiles/bashrc /home/pi/.bashrc \
     && chmod 0644 /home/pi/.bashrc \
     && chown pi:pi /home/pi/.bashrc \
+
     && cp -a /dotfiles/bash.functions.d/. /home/pi/bash.functions.d/ \
-    && chown pi:pi -R /home/pi/bash.functions.d/
+    && chown pi:pi -R /home/pi/bash.functions.d/ \
+
+    && touch /home/pi/.bash_history \
+    && chown pi:pi /home/pi/.bash_history \
+    && chmod 0600 /home/pi/.bash_history
+
+
+# -rw-------  1 root root   22 Jul 17 16:55 .bash_history
 
 # RUN goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
 
