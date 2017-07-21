@@ -64,21 +64,22 @@ notifications:
     on_success: always # default: change
     on_failure: always # default: always
 
-# NOTE: For now we need to wait on this
-# after_success:
-#   # # Tag the docker images using the commit hash
-#   # - docker build --tag ${DOCKER_IMAGE}:${TRAVIS_COMMIT} ./;
+NOTE: For now we need to wait on this
+after_success:
+  # Tag the docker images using the commit hash
+  # - make docker_build_and_tag;
 
-#   # # Tag docker image as 'latest' if it is the master branch
-#   # - if [ "$TRAVIS_BRANCH" == "master" ]; then
-#   #       docker tag ${DOCKER_IMAGE}:${TRAVIS_COMMIT} ${DOCKER_IMAGE}:latest;
-#   #   fi;
+  # # Tag docker image as 'latest' if it is the master branch
+  # - if [ "$TRAVIS_BRANCH" == "master" ]; then
+  #       docker tag ${DOCKER_IMAGE}:${TRAVIS_COMMIT} ${DOCKER_IMAGE}:latest;
+  #   fi;
 
-#   # # Tag docker image with the git tag
-#   # - if [ ! -z  "$TRAVIS_TAG" ]; then
-#   #       docker tag ${DOCKER_IMAGE}:${TRAVIS_COMMIT} ${DOCKER_IMAGE}:${TRAVIS_TAG};
-#   #   fi;
-#   - if [ "$TRAVIS_BRANCH" == "master" ]; then
-#     docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-#     docker push USER/REPO;
-#     fi
+  # Tag docker image with the git tag
+  # - if [ ! -z  "$TRAVIS_TAG" ]; then
+  #       docker tag ${DOCKER_IMAGE}:${TRAVIS_COMMIT} ${DOCKER_IMAGE}:${TRAVIS_TAG};
+  #   fi;
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      make docker_build_and_tag;
+      docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+      docker push bossjones/boss-docker-jhbuild-pygobject3;
+    fi
