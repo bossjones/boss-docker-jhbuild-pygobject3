@@ -907,10 +907,10 @@ RUN cp -f /dotfiles/profile /home/pi/.profile \
 USER $UNAME
 
 # Fixes wierd ssh permission issue
-RUN sudo mv .ssh .ssh.bak && \
-    sudo mv .ssh.bak .ssh && \
-    mv .ssh/.ssh/* .ssh/ && \
-    sudo rm -rfv .ssh/.ssh
+RUN sudo mv /home/pi/.ssh /home/pi/.ssh.bak && \
+    sudo mv /home/pi/.ssh.bak /home/pi/.ssh && \
+    mv /home/pi/.ssh/.ssh/* /home/pi/.ssh/ && \
+    sudo rm -rfv /home/pi/.ssh/.ssh
 
 USER root
 
