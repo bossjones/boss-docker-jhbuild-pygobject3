@@ -113,7 +113,11 @@ foreground {
     if {
         if { s6-echo " [run] lets start these goss tests..." }
         # NOTE: verify that we're the correct user, pi
-        foreground { s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s }
+        foreground {
+            s6-applyuidgid -u 1000 -g 1000
+            cd /tests
+            /usr/local/bin/goss -g ./goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s
+        }
         # NOTE: UNCOMMENT THIS LINE IF YOU NEED TO TEST THIS LOGIC WITHOUT RUNNING TESTS # foreground { s6-echo " [run] pretend we just ran s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s" }
         # foreground { s6-echo " [run] pretend we just ran s6-applyuidgid -u 1000 -g 1000 /usr/local/bin/goss -g /tests/goss.jhbuild.yaml validate --retry-timeout 30s --sleep 1s" }
         # NOTE: importas program
@@ -125,6 +129,16 @@ foreground {
         importas REXIT ?
         foreground { s6-echo " [run] goss exited ${REXIT}." }
         foreground { s6-echo " [run] goss tests ran succesfully fool" }
+        foreground {
+            if -n { s6-test -f /home/pi/gnome } foreground { s6-echo " [run] s6-test -f /home/pi/gnome == TRUE" }
+            # TODO: consider turning this into a rsync
+            cp -a /home/pi/gnome /artifacts/
+        }
+        foreground {
+            if -n { s6-test -f /home/pi/jhbuild } foreground { s6-echo " [run] s6-test -f /home/pi/jhbuild == TRUE" }
+            # TODO: consider turning this into a rsync
+            cp -a /home/pi/jhbuild /artifacts/
+        }
     }
 }
 

@@ -1,0 +1,43 @@
+version: "2"
+
+services:
+  jhbuild_pygobject3:
+    build:
+      context: .
+      dockerfile: Dockerfile.bak
+      args:
+        SCARLETT_ENABLE_SSHD: 0
+        SCARLETT_ENABLE_DBUS: 'true'
+        SCARLETT_BUILD_GNOME: 'true'
+        TRAVIS_CI: 'true'
+    environment:
+      SERVER_LOG_MINIMAL: 1
+      SERVER_APP_NAME: jhbuild-compile
+      COMPOSE_PROJECT_NAME: jhbuild-compile
+      S6_KILL_FINISH_MAXTIME: 1
+      S6_KILL_GRACETIME: 1
+      SERVER_WORKER_PROCESSES: 1
+      # NOTE: This enables SSHD access inside of the container for dev purposes
+      # 1 = false
+      # 0 = true
+      SCARLETT_ENABLE_SSHD: 0
+      SCARLETT_ENABLE_DBUS: 'true'
+      SCARLETT_BUILD_GNOME: 'true'
+      TRAVIS_CI: 'false'
+    # stdin_open: true
+    # tty: true
+    volumes:
+    - ./container/root/tests/goss.jhbuild.yaml:/goss.jhbuild.yaml
+    - ./artifacts:/artifacts
+    - ./ccache:/ccache
+    ports:
+    - "2222:22"
+    volumes_from:
+    - jhbuild-artifact
+
+# volumes:
+#   ccache:
+#     external: true
+volumes:
+  jhbuild-artifact:
+    external: true

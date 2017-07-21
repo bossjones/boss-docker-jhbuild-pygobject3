@@ -1,7 +1,25 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "editor.renderWhitespace": "all",
-    "workbench.iconTheme": "material-theme-icons",
+
+    // The path of the shell that the terminal uses on Linux.
+    "terminal.integrated.shell.linux": "/usr/local/bin/bash",
+
+    // Path to the shellcheck executable.
+    "shellcheck.executablePath": "/usr/local/bin/shellcheck",
+
+    // The command line arguments to use when on the Linux terminal.
+    // "terminal.integrated.shellArgs.linux": [],
+
+    // The path of the shell that the terminal uses on OS X.
+    "terminal.integrated.shell.osx": "/usr/local/bin/bash",
+
+    // The command line arguments to use when on the OS X terminal.
+    // "terminal.integrated.shellArgs.osx": [],
+    "workbench.iconTheme": "material-icon-theme",
+    "window.zoomLevel": 0,
+    "workbench.colorTheme": "Material Theme Palenight",
+    "files.insertFinalNewline": true,
 
     "files.exclude": {
         "out": false, // set this to true to hide the "out" folder with the compiled JS files
@@ -23,6 +41,20 @@
         "**/build": true,
         "**/.bundle": true
     },
+    "python.pythonPath": "/usr/local/bin/python3",
+    "python.formatting.provider": "autopep8",
+    "python.linting.ignorePatterns": [
+      ".vscode/*.py",
+      "**/site-packages/**/*.py"
+    ],
+    "python.venvPath": "~/.virtualenvs",
     "terminal.integrated.shellArgs.osx": ["-l"],
-    "terminal.integrated.shellArgs.linux": ["-l"]
+    "terminal.integrated.shellArgs.linux": ["-l"],
+
+    // A glob pattern that defines the files to search for. Only include files you need, DO NOT USE `**/*.*` for both permormance and avoiding binary files reason
+    "todohighlight.include": "{**/*.js,**/*.jsx,**/*.ts,**/*.tsx,**/*.html,**/*.php,**/*.css,**/*.scss,**/*.mk,**/Makefile}",
+    "files.associations": {
+        "Vagrantfile": "ruby"
+    },
+    "restructuredtext.sphinxBuildPath": "/usr/local/bin/sphinx-build"
 }

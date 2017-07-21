@@ -1,0 +1,8 @@
+---
+file:
+  /home/pi/jhbuild:
+    exists: true
+    mode: "0755"
+    owner: pi
+    group: pi
+    filetype: directory

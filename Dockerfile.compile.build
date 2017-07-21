@@ -3,6 +3,39 @@ MAINTAINER Malcolm Jones <bossjones@theblacktonystark.com>
 
 # Prepare packaging environment
 ENV DEBIAN_FRONTEND noninteractive
+ENV TERM "xterm-256color"
+
+# build-arg are acceptable
+# eg. docker build --build-arg var=xxx
+ARG SCARLETT_ENABLE_SSHD
+ARG SCARLETT_ENABLE_DBUS
+ARG SCARLETT_BUILD_GNOME
+ARG TRAVIS_CI
+
+# metadata
+ARG CONTAINER_VERSION
+ARG GIT_BRANCH
+ARG GIT_SHA
+
+ENV SCARLETT_ENABLE_SSHD ${SCARLETT_ENABLE_SSHD:-0}
+ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}
+ENV SCARLETT_BUILD_GNOME ${SCARLETT_BUILD_GNOME:-'true'}
+ENV TRAVIS_CI ${TRAVIS_CI:-'true'}
+
+RUN echo "SCARLETT_ENABLE_SSHD: ${SCARLETT_ENABLE_SSHD}"
+RUN echo "SCARLETT_ENABLE_DBUS: ${SCARLETT_ENABLE_DBUS}"
+RUN echo "SCARLETT_BUILD_GNOME: ${SCARLETT_BUILD_GNOME}"
+RUN echo "TRAVIS_CI: ${TRAVIS_CI}"
+
+# # include some metadata
+# ENV CONTAINER_VERSION=$CONTAINER_VERSION \
+#     GIT_BRANCH=$GIT_BRANCH \
+#     GIT_SHA=$GIT_SHA
+# RUN mkdir /image-metadata && \
+#     cd /image-metadata && \
+#     echo "$CONTAINER_VERSION" > version; \
+#     echo "$GIT_BRANCH" > git-branch; \
+#     echo "$GIT_SHA" > git-sha
 
 # make apt use ipv4 instead of ipv6 ( faster resolution )
 RUN sed -i "s@^#precedence ::ffff:0:0/96  100@precedence ::ffff:0:0/96  100@" /etc/gai.conf
@@ -26,6 +59,29 @@ ENV LC_ALL     en_US.UTF-8
 
 # ensure local python is preferred over distribution python
 ENV PATH /usr/local/bin:/usr/local/sbin:$PATH
+
+# lets install apt-fast
+RUN set -x \
+    apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:saiarcot895/myppa && \
+    apt-get update && \
+    echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
+    echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
+    echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
+    apt-fast update && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# this is what we need to sed
+# _DOWNLOADER='aria2c -c -j ${_MAXNUM} -x ${_MAXNUM} -s ${_MAXNUM} --min-split-size=1M -i ${DLLIST} --connect-timeout=600 --timeout=600 -m0'
 
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
@@ -83,9 +139,6 @@ ENV TERM "xterm-256color"
 ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
 
-# FIXME: required for jhbuild( sudo apt-get install docbook-xsl build-essential git-core python-libxml2 )
-# source: https://wiki.gnome.org/HowDoI/Jhbuild
-
 RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
@@ -117,14 +170,14 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
     add-apt-repository -y ppa:gnome3-team/gnome3 && \
     add-apt-repository -y ppa:gnome3-team/gnome3-staging && \
     add-apt-repository -y ppa:pitti/systemd-semaphore && \
-    apt-get update -yqq && \
-    apt-get upgrade -yqq && \
+    apt-fast update -yqq && \
+    apt-fast upgrade -yqq && \
     export LANG=en_US.UTF-8 && \
-    apt-get install -qqy libpulse-dev espeak && \
+    apt-fast install -qqy libpulse-dev espeak && \
     apt-cache search --names-only '^(lib)?gstreamer1.0\S*' | sed 's/\(.*\) -.*/\1 /' | grep -iv "Speech"  > dependencies && \
     cat dependencies && \
-    apt-get build-dep -y `cat dependencies` && \
-    apt-get install -qqy gnome-common \
+    apt-fast build-dep -y `cat dependencies` && \
+    apt-fast install -qqy gnome-common \
                         gtk-doc-tools \
                         libgtk-3-dev \
                         libgirepository1.0-dev \
@@ -228,14 +281,86 @@ RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
                         python-libxslt1 \
                         libxslt1-dev \
                         graphviz \
+                        openssh-server \
+                        # optimize compiling
+                        gperf \
+                        bc \
+                        ccache \
+                        file \
+                        rsync \
+                        # vim for debugging
+                        # vim for debugging
+                        vim \
+                        source-highlight \
+                        fortune \
                         # end gst-plugins-bad req
                         ubuntu-restricted-extras && \
-         apt-get clean && \
-         apt-get autoclean -y && \
-         apt-get autoremove -y && \
-         rm -rf /var/lib/{cache,log}/ && \
-         rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+    apt-fast update && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
+
+##########################################################
+# needed to fix *.html issues
+##########################################################
+RUN apt-fast update -y && \
+    export LANG=en_US.UTF-8 && \
+    apt-fast install -y asciidoctor \
+                         libghc-cmark-prof \
+                         libghc-markdown-prof \
+                         libhtml-wikiconverter-markdown-perl \
+                         libmarkdown2-dev \
+                         libpod-markdown-perl \
+                         libsmdev-dev \
+                         libsoldout1-dev \
+                         libtext-markdown-discount-perl \
+                         libxft2-dbg \
+                         linuxdoc-tools \
+                         linuxdoc-tools-info \
+                         linuxdoc-tools-latex \
+                         linuxdoc-tools-text \
+                         markdown \
+                         python-html2text \
+                         python-markdown \
+                         python-mistune \
+                         python3-html2text \
+                         python3-markdown \
+                         python3-misaka \
+                         # specifics gtk-doc
+                         docbook-utils \
+                         docbook-xsl \
+                         docbook-simple \
+                         docbook-to-man \
+                         docbook-dsssl \
+                         jade \
+                         python3-mistune && \
+    apt-fast update && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# source: https://docs.docker.com/engine/examples/running_ssh_service/
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd \
+    && sed -i -r 's/.?UseDNS\syes/UseDNS no/' /etc/ssh/sshd_config \
+    && sed -i -r 's/.?PasswordAuthentication.+/PasswordAuthentication no/' /etc/ssh/sshd_config \
+    && sed -i -r 's/.?ChallengeResponseAuthentication.+/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
+
+# NOTE: It's an example of how to pass environment variables when running a Dockerized SSHD service.
+# NOTE: SSHD scrubs the environment, therefore ENV variables contained in Dockerfile must be pushed to
+# /etc/profile in order for them to be available.
 # source: https://stackoverflow.com/questions/36292317/why-set-visible-now-in-etc-profile
 ENV NOTVISIBLE "in users profile"
 RUN echo 'export VISIBLE=now' >> /etc/profile
@@ -308,12 +433,6 @@ ENV XDG_RUNTIME_DIR=/run/user/1000
 # Source: https://github.com/ambakshi/dockerfiles/blob/09a05ceab3b5a93c974783ad27a8a6301f3c4ca2/devbox/debian8/Dockerfile
 RUN echo "[ \$UID -eq 0 ] && PS1='\[\e[31m\]\h:\w#\[\e[m\] ' || PS1='[\[\033[32m\]\u@\h\[\033[00m\] \[\033[36m\]\W\[\033[31m\]\$(__git_ps1)\[\033[00m\]] \$ '"  | tee /etc/bash_completion.d/prompt
 
-############################[BEGIN - USER]##############################################
-# FIXME: investigate secure_path: http://manpages.ubuntu.com/manpages/zesty/man5/sudoers.5.html
-# NOTE: umask 077 -> allow read, write, and execute permission for the file's owner, but prohibit read, write, and execute permission for everyone else
-# NOTE: The file mode creation mask is initialized to this value. If not specified, the mask will be initialized to 022.
-# Source: http://manpages.ubuntu.com/manpages/xenial/man8/useradd.8.html
-# FIXME: Look at this guy: https://hub.docker.com/r/radmas/mtc-plus-fpm/~/dockerfile/
 RUN set -xe \
     && useradd -U -d ${PI_HOME} -m -r -G adm,sudo,dip,plugdev,tty,audio ${UNAME} \
     && usermod -a -G ${UNAME} -s /bin/bash -u 1000 ${UNAME} \
@@ -321,9 +440,8 @@ RUN set -xe \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github \
     && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME} \
     && mkdir -p ${MAIN_DIR} \
-    && ( \
-        umask 077 \
-        && mkdir ${PI_HOME}/.ssh \
+    && ( mkdir ${PI_HOME}/.ssh \
+        && chmod og-rwx ${PI_HOME}/.ssh \
         && echo "${USER_SSH_PUBKEY}" \
             > ${PI_HOME}/.ssh/authorized_keys \
     ) \
@@ -336,16 +454,36 @@ RUN set -xe \
     && chown -R pi:pi "$XDG_RUNTIME_DIR" \
     && chmod -R 0700 "$XDG_RUNTIME_DIR"
 
-# source: https://github.com/just-containers/s6-overlay
-# FIXME: For now, `s6-overlay` doesn't support
-# running it with a user different than `root`,
-# so consequently Dockerfile `USER`
-# directive is not supported (except `USER root` of course ;P).
-# FIXME: I DISABLED THIS 6/23/2017 # USER $UNAME
+# FIXME: Note this line here breaks permissions due to umask 077 running as root instead of pi user
+# FIXME: removing for now, 7/20/2017
+# && ( \
+#     umask 077 \
+#     && mkdir ${PI_HOME}/.ssh \
+#     && echo "${USER_SSH_PUBKEY}" \
+#         > ${PI_HOME}/.ssh/authorized_keys \
+# ) \
+
+# Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
+# - For automated building with private repos only accessible by ssh
+#
+# ********************* ROOT ***********************************************
+RUN mkdir -p /root/.ssh && chmod og-rwx /root/.ssh && \
+    echo "Host * " > /root/.ssh/config && \
+    echo "StrictHostKeyChecking no " >> /root/.ssh/config && \
+    echo "UserKnownHostsFile=/dev/null" >> /root/.ssh/config
+
+# Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
+# - For automated building with private repos only accessible by ssh
+#
+# ********************* PI USER ********************************************
+RUN echo "Host * " > ${PI_HOME}/.ssh/config && \
+    echo "StrictHostKeyChecking no " >> ${PI_HOME}/.ssh/config && \
+    echo "UserKnownHostsFile=/dev/null" >> ${PI_HOME}/.ssh/config
 
 WORKDIR /home/$UNAME
 
 ENV HOME "/home/$UNAME"
+# ENV DISPLAY :1
 
 # Create a basic .jhbuildrc
 RUN echo "import os"                                   > /home/pi/.jhbuildrc && \
@@ -380,14 +518,188 @@ RUN echo "import os"                                   > /home/pi/.jhbuildrc && 
     echo "os.environ['PIP_DOWNLOAD_CACHE'] = '$USER_HOME/.pip/cache'"                        >> /home/pi/.jhbuildrc && \
     cat /home/pi/.jhbuildrc
 
+# Expose port for ssh
+EXPOSE 22
+
 # Overlay the root filesystem from this repo
 COPY ./container/root /
+
+# Copy over dotfiles repo, we'll use this later on to init a bunch of thing
+COPY ./dotfiles /dotfiles
 
 RUN mkdir -p /home/pi/.local/bin \
     && cp -a /env-setup /home/pi/.local/bin/env-setup \
     && chmod +x /home/pi/.local/bin/env-setup
 
+# NOTE: This should get around any docker permission issues we normally have
+RUN cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+    && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+    && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+
+# NOTE: Add dynenv script
+RUN cp -a /scripts/with-dynenv /usr/local/bin/with-dynenv \
+    && chmod +x /usr/local/bin/with-dynenv \
+    && chown pi:pi /usr/local/bin/with-dynenv
+
+# TODO: Need this ccache
+# FIXME: This needs to be duplicated in the env-setup script, etc
+ENV CCACHE_DIR /ccache
+
+# TODO: before building should help with some macro issues
+# FIXME: This needs to be duplicated in the env-setup script, etc
+# /home/pi/jhbuild/share/aclocal
+# ENV ACLOCAL_FLAGS "-I ${PREFIX}/share/aclocal"
+
+# FIXME: Do we need to add this to jhbuildrc?
+# os.environ['LDFLAGS'] = "-L" + prefix + "/lib" (in .jhbuildrc) helps if libtool picks up the wrong static libraries.
+
+# TODO: ccache.conf
+RUN mkdir -p /ccache && \
+    echo "max_size = 5.0G" > /ccache/ccache.conf && \
+    chown -R ${UNAME}:${UNAME} /ccache
+
+# NOTE: Temp run install as pi user
+USER $UNAME
+
 RUN bash /prep-pi.sh
+# Install jhbuild stuff
+RUN bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+
+RUN pip install --user powerline-status && \
+    git config --global core.editor "vim" && \
+    git config --global push.default simple && \
+    git config --global color.ui true
+
+# NOTE: Return to root user when finished
+USER root
+
+RUN bash /prep-pi.sh
+
+# NOTE: Prepare XDG_RUNTIME_DIR and everything else
+# we need to run our scripts correctly
+RUN bash /scripts/write_xdg_dir_init.sh "pi"
+RUN bash /scripts/write_xdg_dir_init.sh "root"
+
+# Make sure the ruby2.2 packages are installed (Debian)
+RUN add-apt-repository -y ppa:brightbox/ruby-ng && \
+    apt-fast update -yqq && \
+    export LANG=en_US.UTF-8 && \
+    apt-fast install -qqy ruby2.2 ruby2.2-dev && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# Install powerline deps
+# source: https://hub.docker.com/r/namredips/docker-dev/~/dockerfile/
+RUN apt-fast update -yqq && \
+    export LANG=en_US.UTF-8 && \
+    apt-fast install -y autoconf automake libtool autotools-dev build-essential checkinstall bc ncurses-dev ncurses-term powerline python3-powerline fonts-powerline && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+
+# RUN git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+# RUN vim +PluginInstall +qall
+
+# TODO: bash_it stuff will go here
+# RUN bash /scripts/setup_pi_user_bash_it_and_powerline.sh
+
+# install bash_it and bats
+RUN mkdir -p /home/pi/.tmp && \
+    chown pi:pi -R /home/pi/.tmp && \
+    cd /home/pi/.tmp && \
+    git clone --depth=1 https://github.com/Bash-it/bash-it.git /home/pi/.bash_it && \
+    /home/pi/.bash_it/install.sh --silent --no-modify-config && \
+    git clone --depth 1 https://github.com/sstephenson/bats.git /home/pi/.tmp/bats && \
+    /home/pi/.tmp/bats/install.sh /usr/local && \
+    chown pi:pi -R /usr/local && \
+    chown -R pi:pi /home/pi \
+    && \
+
+    # install powerline
+    # source: https://github.com/adidenko/powerline
+    # source: https://ubuntu-mate.community/t/installing-powerline-as-quickly-as-possible/5381
+    mkdir -p /home/pi/.tmp && \
+    chown pi:pi -R /home/pi/.tmp && \
+    cd /home/pi/.tmp && \
+    git clone https://github.com/powerline/fonts.git /home/pi/dev/powerline-fonts \
+    && wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf \
+    && wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf \
+    && mkdir -p /home/pi/.fonts \
+    && mv PowerlineSymbols.otf /home/pi/.fonts/ \
+    && fc-cache -vf /home/pi/.fonts/ \
+    && mkdir -p /home/pi/.config/fontconfig/conf.d/ \
+    && mv 10-powerline-symbols.conf /home/pi/.config/fontconfig/conf.d/ \
+    && touch /home/pi/.screenrc \
+    && sed -i '1i term screen-256color' /home/pi/.screenrc \
+    && git clone https://github.com/adidenko/powerline /home/pi/.config/powerline \
+    && chown -R pi:pi /home/pi \
+    && \
+
+    # rubygem defaults
+    cp -f /dotfiles/gemrc /home/pi/.gemrc \
+    && chmod 0644 /home/pi/.gemrc \
+    && chown pi:pi /home/pi/.gemrc \
+    && \
+
+    # pythonrc defaults
+    cp -f /dotfiles/pythonrc /home/pi/.pythonrc \
+    && chmod 0644 /home/pi/.pythonrc \
+    && chown pi:pi /home/pi/.pythonrc
+
+# RUN pip3 install --upgrade pip
+# RUN pip3 install ipython
+# RUN pip3 install flake8
+# RUN pip3 install pylint
+
+# NOTE: Add proper .profile and .bashrc files
+RUN cp -f /dotfiles/profile /home/pi/.profile \
+    && chmod 0644 /home/pi/.profile \
+    && chown pi:pi /home/pi/.profile \
+
+    && cp -f /dotfiles/bash_profile /home/pi/.bash_profile \
+    && chmod 0644 /home/pi/.bash_profile \
+    && chown pi:pi /home/pi/.bash_profile \
+
+    && cp -f /dotfiles/bashrc /home/pi/.bashrc \
+    && chmod 0644 /home/pi/.bashrc \
+    && chown pi:pi /home/pi/.bashrc \
+
+    && cp -a /dotfiles/bash.functions.d/. /home/pi/bash.functions.d/ \
+    && chown pi:pi -R /home/pi/bash.functions.d/ \
+    && touch /home/pi/.bash_history \
+    && chown pi:pi /home/pi/.bash_history \
+    && chmod 0600 /home/pi/.bash_history
+
+# NOTE: Temp run install as pi user
+USER $UNAME
+
+# Fixes wierd ssh permission issue
+RUN sudo mv /home/pi/.ssh /home/pi/.ssh.bak
+RUN sudo mv /home/pi/.ssh.bak /home/pi/.ssh
+RUN ls -lta /home/pi/.ssh
+
+USER root
+
+
+# FIXME: eventually we might need these guys
+# apt-get install  g++ gdb gdbserver
+
+# FIXME: Do we need this??
+# PYTHONIOENCODING="UTF-8"
+# UMASK=002
+# EDGE=0
+# source: https://github.com/hurricanehrndz/docker-containers/blob/64fe4f2f0975587a00d180330b19e0aa7596581f/headphones/Dockerfile
 
 CMD ["/bin/bash", "/run.sh"]
 

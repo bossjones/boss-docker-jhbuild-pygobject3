@@ -1,0 +1,28 @@
+---
+command:
+  # "title" and "meta" are arbitrary values that will be printed out in the test output.
+  # "title" is a string value, "meta" is an aritrary set of key/value pairs.
+  # Here we are using meta to provide the user with checklist of possible remedies
+  # when this test fails
+  # title: Ensure we can resolve our backend db
+  # meta:
+  #   remedy.1: Check if mysql container logs contain errors
+  #   remedy.2: Check that both containers are using the same network
+  jhbuild list:
+    exit-status: 0
+    stderr: ['add use_local_modulesets = True']
+  jhbuild run python -c 'from gi.repository import Gst; print(Gst)':
+    exit-status: 0
+    stderr: ['add use_local_modulesets = True']
+  jhbuild run python -c 'import sys; print(sys.version_info[0])':
+    exit-status: 0
+    stderr: ['add use_local_modulesets = True']
+  jhbuild run python -c 'import sys; print(sys.version_info)':
+    exit-status: 0
+    stderr: ['add use_local_modulesets = True']
+  jhbuild run python -c 'import gi;from gi.repository import GObject;print(GObject.pygobject_version);':
+    exit-status: 0
+    stderr: ['add use_local_modulesets = True']
+  jhbuild run python -c "import gi;gi.require_version('Gst', '1.0');from gi.repository import Gst;print(Gst.version_string());":
+    exit-status: 0
+    stderr: ['add use_local_modulesets = True']
