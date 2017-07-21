@@ -10,4 +10,5 @@ gossfile:
   "goss.d/user/file_permissions.yaml": {}
   "goss.d/hosts/hostname.yaml": {}
   "goss.d/services/dbus.yaml": {}
+  "goss.d/ssh/permissions.yaml": {}
   "goss.d/packages/xenial.yaml": {}

@@ -903,6 +903,16 @@ RUN cp -f /dotfiles/profile /home/pi/.profile \
     && chown pi:pi /home/pi/.bash_history \
     && chmod 0600 /home/pi/.bash_history
 
+# NOTE: Temp run install as pi user
+USER $UNAME
+
+# Fixes wierd ssh permission issue
+RUN sudo mv .ssh .ssh.bak && \
+    sudo mv .ssh.bak .ssh && \
+    mv .ssh/.ssh/* .ssh/ && \
+    sudo rm -rfv .ssh/.ssh
+
+USER root
 
 # -rw-------  1 root root   22 Jul 17 16:55 .bash_history
 
