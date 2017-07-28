@@ -17,8 +17,8 @@
     // The command line arguments to use when on the OS X terminal.
     // "terminal.integrated.shellArgs.osx": [],
     "workbench.iconTheme": "material-icon-theme",
-    "window.zoomLevel": 0,
-    "workbench.colorTheme": "Material Theme Palenight",
+    "window.zoomLevel": -1,
+    // "workbench.colorTheme": "Material Theme Palenight",
     "files.insertFinalNewline": true,
 
     "files.exclude": {
@@ -30,7 +30,8 @@
         "**/.hg": true,
         "**/.DS_Store": true,
         "**/.vendor": true,
-        "**/.bundle": true
+        "**/.bundle": true,
+        "**/*.xterm": true
     },
     "files.trimTrailingWhitespace": true,
     "search.exclude": {
@@ -39,7 +40,8 @@
         "**/.vscode/tags": true,
         "**/.vendor": true,
         "**/build": true,
-        "**/.bundle": true
+        "**/.bundle": true,
+        "**/*.xterm": true
     },
     "python.pythonPath": "/usr/local/bin/python3",
     "python.formatting.provider": "autopep8",
@@ -56,5 +58,8 @@
     "files.associations": {
         "Vagrantfile": "ruby"
     },
+    // Points to the restructuredtext-lint exectuable.
+    "restructuredtext.linter.executablePath": "/usr/local/bin/restructuredtext-lint",
+    // The full path of sphinx-build utility. This is an absolute path.
     "restructuredtext.sphinxBuildPath": "/usr/local/bin/sphinx-build"
 }
