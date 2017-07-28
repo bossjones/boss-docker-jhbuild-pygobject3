@@ -12,10 +12,6 @@ command:
     exit-status: 0
     stdout:
       - '-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer'
-  echo $CURRENT_DIR:
-    exit-status: 0
-    stdout:
-      - '$(pwd)'
   echo $DEBIAN_FRONTEND:
     exit-status: 0
     stdout:

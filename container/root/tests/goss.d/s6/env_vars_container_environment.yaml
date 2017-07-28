@@ -12,10 +12,6 @@ command:
     exit-status: 0
     stdout:
       - '-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer'
-  cat /var/run/s6/container_environment/CURRENT_DIR:
-    exit-status: 0
-    stdout:
-      - '$(pwd)'
   cat /var/run/s6/container_environment/DEBIAN_FRONTEND:
     exit-status: 0
     stdout:
@@ -128,10 +124,6 @@ command:
     exit-status: 0
     stdout:
       - '/home/pi/dev'
-  cat /var/run/s6/container_environment/PWD:
-    exit-status: 0
-    stdout:
-      - '/home/pi'
   cat /var/run/s6/container_environment/PYTHON:
     exit-status: 0
     stdout:
