@@ -1176,7 +1176,7 @@ USER $UNAME
 
 RUN bash /prep-pi.sh && \
     bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh && \
-    git install --user powerline-status && \
+    pip install --user powerline-status && \
     git config --global core.editor "vim" && \
     git config --global push.default simple && \
     git config --global color.ui true
