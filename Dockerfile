@@ -30,8 +30,8 @@ RUN echo "TRAVIS_CI: ${TRAVIS_CI}"
 # So, to prevent services from being started automatically when you install packages with dpkg, apt, etc., just do this (as root):
 # RUN sed -i "s/^exit 101$/exit 0/" /usr/sbin/policy-rc.d
 
-# make apt use ipv4 instead of ipv6 ( faster resolution )
-RUN sed -i "s@^#precedence ::ffff:0:0/96  100@precedence ::ffff:0:0/96  100@" /etc/gai.conf
+# DISABLED # # make apt use ipv4 instead of ipv6 ( faster resolution )
+# DISABLED # RUN sed -i "s@^#precedence ::ffff:0:0/96  100@precedence ::ffff:0:0/96  100@" /etc/gai.conf
 
 # DISABLED # # Install language pack before setting env vars to utf-8
 # DISABLED # RUN \
@@ -256,6 +256,19 @@ ENV USER_SSH_PUBKEY "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtv
 ENV XDG_RUNTIME_DIR=/run/user/1000
 # ENV XDG_RUNTIME_DIR=/run/pi/1000
 
+# Expose port for ssh
+EXPOSE 22
+
+# Overlay the root filesystem from this repo
+COPY ./container/root /
+
+# Copy over dotfiles repo, we'll use this later on to init a bunch of thing
+COPY ./dotfiles /dotfiles
+
+WORKDIR /home/$UNAME
+
+ENV HOME "/home/$UNAME"
+
 #------------------------------------ more changes
 
 
@@ -263,6 +276,7 @@ ENV XDG_RUNTIME_DIR=/run/user/1000
 # source: https://wiki.gnome.org/HowDoI/Jhbuild
 
 RUN \
+    sed -i "s@^#precedence ::ffff:0:0/96  100@precedence ::ffff:0:0/96  100@" /etc/gai.conf; \
     apt-get update && \
     # install apt-fast and other deps
     apt-get -y upgrade && \
@@ -613,7 +627,88 @@ RUN \
     echo "os.environ['VIRTUALENVWRAPPER_VIRTUALENV'] = '$VIRTUALENVWRAPPER_VIRTUALENV'"     >> /home/pi/.jhbuildrc && \
     echo "os.environ['PYTHONSTARTUP'] = '$USER_HOME/.pythonrc'"                              >> /home/pi/.jhbuildrc && \
     echo "os.environ['PIP_DOWNLOAD_CACHE'] = '$USER_HOME/.pip/cache'"                        >> /home/pi/.jhbuildrc && \
-    cat /home/pi/.jhbuildrc
+    cat /home/pi/.jhbuildrc; \
+
+    mkdir -p /home/pi/.local/bin \
+    && cp -a /env-setup /home/pi/.local/bin/env-setup \
+    && chmod +x /home/pi/.local/bin/env-setup; \
+
+    # NOTE: This should get around any docker permission issues we normally have
+    cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+    && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+    && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh; \
+
+    cp -a /scripts/with-dynenv /usr/local/bin/with-dynenv \
+    && chmod +x /usr/local/bin/with-dynenv \
+    && chown pi:pi /usr/local/bin/with-dynenv; \
+
+    export CCACHE_DIR=/ccache && \
+    mkdir -p /ccache && \
+    echo "max_size = 5.0G" > /ccache/ccache.conf && \
+    chown -R ${UNAME}:${UNAME} /ccache; \
+
+    # bash-it stuff
+    mkdir -p /home/pi/.tmp && \
+    chown pi:pi -R /home/pi/.tmp && \
+    cd /home/pi/.tmp && \
+    git clone --depth=1 https://github.com/Bash-it/bash-it.git /home/pi/.bash_it && \
+    /home/pi/.bash_it/install.sh --silent --no-modify-config && \
+    git clone --depth 1 https://github.com/sstephenson/bats.git /home/pi/.tmp/bats && \
+    /home/pi/.tmp/bats/install.sh /usr/local && \
+    chown pi:pi -R /usr/local && \
+    chown -R pi:pi /home/pi \
+    && \
+
+    # install powerline
+    # source: https://github.com/adidenko/powerline
+    # source: https://ubuntu-mate.community/t/installing-powerline-as-quickly-as-possible/5381
+    mkdir -p /home/pi/.tmp && \
+    chown pi:pi -R /home/pi/.tmp && \
+    cd /home/pi/.tmp && \
+    git clone https://github.com/powerline/fonts.git /home/pi/dev/powerline-fonts \
+    && wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf \
+    && wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf \
+    && mkdir -p /home/pi/.fonts \
+    && mv PowerlineSymbols.otf /home/pi/.fonts/ \
+    && fc-cache -vf /home/pi/.fonts/ \
+    && mkdir -p /home/pi/.config/fontconfig/conf.d/ \
+    && mv 10-powerline-symbols.conf /home/pi/.config/fontconfig/conf.d/ \
+    && touch /home/pi/.screenrc \
+    && sed -i '1i term screen-256color' /home/pi/.screenrc \
+    && git clone https://github.com/adidenko/powerline /home/pi/.config/powerline \
+    && chown -R pi:pi /home/pi \
+    && \
+
+    # rubygem defaults
+    cp -f /dotfiles/gemrc /home/pi/.gemrc \
+    && chmod 0644 /home/pi/.gemrc \
+    && chown pi:pi /home/pi/.gemrc \
+    && \
+
+    # pythonrc defaults
+    cp -f /dotfiles/pythonrc /home/pi/.pythonrc \
+    && chmod 0644 /home/pi/.pythonrc \
+    && chown pi:pi /home/pi/.pythonrc; \
+
+    # NOTE: Add proper .profile and .bashrc files
+    cp -f /dotfiles/profile /home/pi/.profile \
+    && chmod 0644 /home/pi/.profile \
+    && chown pi:pi /home/pi/.profile \
+
+    && cp -f /dotfiles/bash_profile /home/pi/.bash_profile \
+    && chmod 0644 /home/pi/.bash_profile \
+    && chown pi:pi /home/pi/.bash_profile \
+
+    && cp -f /dotfiles/bashrc /home/pi/.bashrc \
+    && chmod 0644 /home/pi/.bashrc \
+    && chown pi:pi /home/pi/.bashrc \
+
+    && cp -a /dotfiles/bash.functions.d/. /home/pi/bash.functions.d/ \
+    && chown pi:pi -R /home/pi/bash.functions.d/ \
+
+    && touch /home/pi/.bash_history \
+    && chown pi:pi /home/pi/.bash_history \
+    && chmod 0600 /home/pi/.bash_history
 
 
 # DISBLED # ##########################################################
@@ -804,9 +899,9 @@ RUN \
 # directive is not supported (except `USER root` of course ;P).
 # FIXME: I DISABLED THIS 6/23/2017 # USER $UNAME
 
-WORKDIR /home/$UNAME
-
-ENV HOME "/home/$UNAME"
+# DISABLED # WORKDIR /home/$UNAME
+# DISABLED #
+# DISABLED # ENV HOME "/home/$UNAME"
 # ENV DISPLAY :1
 ############################[END - USER]################################################
 
@@ -1018,38 +1113,38 @@ ENV HOME "/home/$UNAME"
 #     curl -L 'https://raw.githubusercontent.com/drothlis/gstreamer/bash-completion-master/tools/gstreamer-completion' | sudo tee -a /etc/bash_completion.d/gstreamer-completion && \
 #     sudo chown root:root /etc/bash_completion.d/gstreamer-completion
 
-# Expose port for ssh
-EXPOSE 22
-
-# Overlay the root filesystem from this repo
-COPY ./container/root /
-
-# Copy over dotfiles repo, we'll use this later on to init a bunch of thing
-COPY ./dotfiles /dotfiles
+# DISABLED # # Expose port for ssh
+# DISABLED # EXPOSE 22
+# DISABLED #
+# DISABLED # # Overlay the root filesystem from this repo
+# DISABLED # COPY ./container/root /
+# DISABLED #
+# DISABLED # # Copy over dotfiles repo, we'll use this later on to init a bunch of thing
+# DISABLED # COPY ./dotfiles /dotfiles
 
 # DISABLED # RUN mkdir -p /home/pi/.local/bin \
 # DISABLED #     && cp -a /env-setup /home/pi/.local/bin/env-setup \
 # DISABLED #     && chmod +x /home/pi/.local/bin/env-setup
 
-# Copy over dotfiles repo, we'll use this later on to init a bunch of thing
-RUN \
-    mkdir -p /home/pi/.local/bin \
-    && cp -a /env-setup /home/pi/.local/bin/env-setup \
-    && chmod +x /home/pi/.local/bin/env-setup; \
-
-    # NOTE: This should get around any docker permission issues we normally have
-    cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
-    && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
-    && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh; \
-
-    cp -a /scripts/with-dynenv /usr/local/bin/with-dynenv \
-    && chmod +x /usr/local/bin/with-dynenv \
-    && chown pi:pi /usr/local/bin/with-dynenv; \
-
-    export CCACHE_DIR=/ccache && \
-    mkdir -p /ccache && \
-    echo "max_size = 5.0G" > /ccache/ccache.conf && \
-    chown -R ${UNAME}:${UNAME} /ccache
+# DISABLED # # Copy over dotfiles repo, we'll use this later on to init a bunch of thing
+# DISABLED # RUN \
+# DISABLED #     mkdir -p /home/pi/.local/bin \
+# DISABLED #     && cp -a /env-setup /home/pi/.local/bin/env-setup \
+# DISABLED #     && chmod +x /home/pi/.local/bin/env-setup; \
+# DISABLED #
+# DISABLED #     # NOTE: This should get around any docker permission issues we normally have
+# DISABLED #     cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+# DISABLED #     && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
+# DISABLED #     && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh; \
+# DISABLED #
+# DISABLED #     cp -a /scripts/with-dynenv /usr/local/bin/with-dynenv \
+# DISABLED #     && chmod +x /usr/local/bin/with-dynenv \
+# DISABLED #     && chown pi:pi /usr/local/bin/with-dynenv; \
+# DISABLED #
+# DISABLED #     export CCACHE_DIR=/ccache && \
+# DISABLED #     mkdir -p /ccache && \
+# DISABLED #     echo "max_size = 5.0G" > /ccache/ccache.conf && \
+# DISABLED #     chown -R ${UNAME}:${UNAME} /ccache
 
 # DISABLED # # NOTE: Add dynenv script
 # DISABLED # RUN cp -a /scripts/with-dynenv /usr/local/bin/with-dynenv \
@@ -1139,68 +1234,68 @@ RUN bash /prep-pi.sh && \
 # TODO: bash_it stuff will go here
 # RUN bash /scripts/setup_pi_user_bash_it_and_powerline.sh
 
-# install bash_it and bats
-RUN mkdir -p /home/pi/.tmp && \
-    chown pi:pi -R /home/pi/.tmp && \
-    cd /home/pi/.tmp && \
-    git clone --depth=1 https://github.com/Bash-it/bash-it.git /home/pi/.bash_it && \
-    /home/pi/.bash_it/install.sh --silent --no-modify-config && \
-    git clone --depth 1 https://github.com/sstephenson/bats.git /home/pi/.tmp/bats && \
-    /home/pi/.tmp/bats/install.sh /usr/local && \
-    chown pi:pi -R /usr/local && \
-    chown -R pi:pi /home/pi \
-    && \
-
-    # install powerline
-    # source: https://github.com/adidenko/powerline
-    # source: https://ubuntu-mate.community/t/installing-powerline-as-quickly-as-possible/5381
-    mkdir -p /home/pi/.tmp && \
-    chown pi:pi -R /home/pi/.tmp && \
-    cd /home/pi/.tmp && \
-    git clone https://github.com/powerline/fonts.git /home/pi/dev/powerline-fonts \
-    && wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf \
-    && wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf \
-    && mkdir -p /home/pi/.fonts \
-    && mv PowerlineSymbols.otf /home/pi/.fonts/ \
-    && fc-cache -vf /home/pi/.fonts/ \
-    && mkdir -p /home/pi/.config/fontconfig/conf.d/ \
-    && mv 10-powerline-symbols.conf /home/pi/.config/fontconfig/conf.d/ \
-    && touch /home/pi/.screenrc \
-    && sed -i '1i term screen-256color' /home/pi/.screenrc \
-    && git clone https://github.com/adidenko/powerline /home/pi/.config/powerline \
-    && chown -R pi:pi /home/pi \
-    && \
-
-    # rubygem defaults
-    cp -f /dotfiles/gemrc /home/pi/.gemrc \
-    && chmod 0644 /home/pi/.gemrc \
-    && chown pi:pi /home/pi/.gemrc \
-    && \
-
-    # pythonrc defaults
-    cp -f /dotfiles/pythonrc /home/pi/.pythonrc \
-    && chmod 0644 /home/pi/.pythonrc \
-    && chown pi:pi /home/pi/.pythonrc; \
-
-    # NOTE: Add proper .profile and .bashrc files
-    cp -f /dotfiles/profile /home/pi/.profile \
-    && chmod 0644 /home/pi/.profile \
-    && chown pi:pi /home/pi/.profile \
-
-    && cp -f /dotfiles/bash_profile /home/pi/.bash_profile \
-    && chmod 0644 /home/pi/.bash_profile \
-    && chown pi:pi /home/pi/.bash_profile \
-
-    && cp -f /dotfiles/bashrc /home/pi/.bashrc \
-    && chmod 0644 /home/pi/.bashrc \
-    && chown pi:pi /home/pi/.bashrc \
-
-    && cp -a /dotfiles/bash.functions.d/. /home/pi/bash.functions.d/ \
-    && chown pi:pi -R /home/pi/bash.functions.d/ \
-
-    && touch /home/pi/.bash_history \
-    && chown pi:pi /home/pi/.bash_history \
-    && chmod 0600 /home/pi/.bash_history
+# DISABLED ## install bash_it and bats
+# DISABLED #RUN mkdir -p /home/pi/.tmp && \
+# DISABLED #    chown pi:pi -R /home/pi/.tmp && \
+# DISABLED #    cd /home/pi/.tmp && \
+# DISABLED #    git clone --depth=1 https://github.com/Bash-it/bash-it.git /home/pi/.bash_it && \
+# DISABLED #    /home/pi/.bash_it/install.sh --silent --no-modify-config && \
+# DISABLED #    git clone --depth 1 https://github.com/sstephenson/bats.git /home/pi/.tmp/bats && \
+# DISABLED #    /home/pi/.tmp/bats/install.sh /usr/local && \
+# DISABLED #    chown pi:pi -R /usr/local && \
+# DISABLED #    chown -R pi:pi /home/pi \
+# DISABLED #    && \
+# DISABLED #
+# DISABLED #    # install powerline
+# DISABLED #    # source: https://github.com/adidenko/powerline
+# DISABLED #    # source: https://ubuntu-mate.community/t/installing-powerline-as-quickly-as-possible/5381
+# DISABLED #    mkdir -p /home/pi/.tmp && \
+# DISABLED #    chown pi:pi -R /home/pi/.tmp && \
+# DISABLED #    cd /home/pi/.tmp && \
+# DISABLED #    git clone https://github.com/powerline/fonts.git /home/pi/dev/powerline-fonts \
+# DISABLED #    && wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf \
+# DISABLED #    && wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf \
+# DISABLED #    && mkdir -p /home/pi/.fonts \
+# DISABLED #    && mv PowerlineSymbols.otf /home/pi/.fonts/ \
+# DISABLED #    && fc-cache -vf /home/pi/.fonts/ \
+# DISABLED #    && mkdir -p /home/pi/.config/fontconfig/conf.d/ \
+# DISABLED #    && mv 10-powerline-symbols.conf /home/pi/.config/fontconfig/conf.d/ \
+# DISABLED #    && touch /home/pi/.screenrc \
+# DISABLED #    && sed -i '1i term screen-256color' /home/pi/.screenrc \
+# DISABLED #    && git clone https://github.com/adidenko/powerline /home/pi/.config/powerline \
+# DISABLED #    && chown -R pi:pi /home/pi \
+# DISABLED #    && \
+# DISABLED #
+# DISABLED #    # rubygem defaults
+# DISABLED #    cp -f /dotfiles/gemrc /home/pi/.gemrc \
+# DISABLED #    && chmod 0644 /home/pi/.gemrc \
+# DISABLED #    && chown pi:pi /home/pi/.gemrc \
+# DISABLED #    && \
+# DISABLED #
+# DISABLED #    # pythonrc defaults
+# DISABLED #    cp -f /dotfiles/pythonrc /home/pi/.pythonrc \
+# DISABLED #    && chmod 0644 /home/pi/.pythonrc \
+# DISABLED #    && chown pi:pi /home/pi/.pythonrc; \
+# DISABLED #
+# DISABLED #    # NOTE: Add proper .profile and .bashrc files
+# DISABLED #    cp -f /dotfiles/profile /home/pi/.profile \
+# DISABLED #    && chmod 0644 /home/pi/.profile \
+# DISABLED #    && chown pi:pi /home/pi/.profile \
+# DISABLED #
+# DISABLED #    && cp -f /dotfiles/bash_profile /home/pi/.bash_profile \
+# DISABLED #    && chmod 0644 /home/pi/.bash_profile \
+# DISABLED #    && chown pi:pi /home/pi/.bash_profile \
+# DISABLED #
+# DISABLED #    && cp -f /dotfiles/bashrc /home/pi/.bashrc \
+# DISABLED #    && chmod 0644 /home/pi/.bashrc \
+# DISABLED #    && chown pi:pi /home/pi/.bashrc \
+# DISABLED #
+# DISABLED #    && cp -a /dotfiles/bash.functions.d/. /home/pi/bash.functions.d/ \
+# DISABLED #    && chown pi:pi -R /home/pi/bash.functions.d/ \
+# DISABLED #
+# DISABLED #    && touch /home/pi/.bash_history \
+# DISABLED #    && chown pi:pi /home/pi/.bash_history \
+# DISABLED #    && chmod 0600 /home/pi/.bash_history
 
 # RUN pip3 install --upgrade pip
 # RUN pip3 install ipython
