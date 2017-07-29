@@ -43,10 +43,35 @@ RUN \
   apt-get autoclean -y && \
   apt-get autoremove -y && \
   rm -rf /var/lib/{cache,log}/ && \
-  rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+  rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/* && \
+  # Set locale (fix the locale warnings)
+  locale-gen en_US.UTF-8 && \
+  localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || : && \
+  export LANG=en_US.UTF-8 && \
+  export LC_ALL=en_US.UTF-8 && \
+  PATH=/usr/local/bin:/usr/local/sbin:$PATH && \
+  set -x \
+    apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:saiarcot895/myppa && \
+    apt-get update && \
+    echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
+    echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
+    echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast; \
+    apt-fast update && \
+    apt-fast install -y dbus dbus-x11 psmisc vim xvfb xclip htop && \
+    # now that apt-fast is setup, lets clean everything in this layer
+    apt-fast autoremove -y && \
+    # now clean regular apt-get stuff
+    apt-get clean && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/{cache,log}/ && \
+    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
 # # Ensure UTF-8 lang and locale
-RUN locale-gen en_US.UTF-8
+# RUN locale-gen en_US.UTF-8
 ENV LANG       en_US.UTF-8
 ENV LC_ALL     en_US.UTF-8
 
@@ -57,32 +82,25 @@ ENV LC_ALL     en_US.UTF-8
 # ensure local python is preferred over distribution python
 ENV PATH /usr/local/bin:/usr/local/sbin:$PATH
 
-# lets install apt-fast
-RUN set -x \
-    apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:saiarcot895/myppa && \
-    apt-get update && \
-    echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
-    echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
-    echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
-    # sed -i'' "/^_DOWNLOADER=/ s/-m0/-m0 \
-    # --quiet \
-    # --console-log-level=error \
-    # --show-console-readout=false \
-    # --summary-interval=10 \
-    # --enable-rpc/" /etc/apt-fast.conf && \
-    # sed -i "/^_DOWNLOADER=/ s/-m0/-m0 --quiet --console-log-level=error --show-console-readout=false --summary-interval=10 --enable-rpc --on-download-stop=apt-fast-progress/" /etc/apt-fast.conf && \
-    apt-fast update && \
-    # now that apt-fast is setup, lets clean everything in this layer
-    apt-fast autoremove -y && \
-    # now clean regular apt-get stuff
-    apt-get clean && \
-    apt-get autoclean -y && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/{cache,log}/ && \
-    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+# DISABLED # # lets install apt-fast
+# DISABLED # RUN set -x \
+# DISABLED #     apt-get update && \
+# DISABLED #     apt-get install -y software-properties-common && \
+# DISABLED #     add-apt-repository -y ppa:saiarcot895/myppa && \
+# DISABLED #     apt-get update && \
+# DISABLED #     echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
+# DISABLED #     echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
+# DISABLED #     echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
+# DISABLED #     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
+# DISABLED #     apt-fast update && \
+# DISABLED #     # now that apt-fast is setup, lets clean everything in this layer
+# DISABLED #     apt-fast autoremove -y && \
+# DISABLED #     # now clean regular apt-get stuff
+# DISABLED #     apt-get clean && \
+# DISABLED #     apt-get autoclean -y && \
+# DISABLED #     apt-get autoremove -y && \
+# DISABLED #     rm -rf /var/lib/{cache,log}/ && \
+# DISABLED #     rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
 
 # this is what we need to sed
 # _DOWNLOADER='aria2c -c -j ${_MAXNUM} -x ${_MAXNUM} -s ${_MAXNUM} --min-split-size=1M -i ${DLLIST} --connect-timeout=600 --timeout=600 -m0'
