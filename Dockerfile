@@ -183,7 +183,7 @@ RUN \
     echo "SCARLETT_BUILD_GNOME: ${SCARLETT_BUILD_GNOME}" && \
     echo "TRAVIS_CI: ${TRAVIS_CI}" && \
     bash /prep-pi.sh && \
-    time bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+    bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
 
 # NOTE: Return to root user when finished
 USER root
