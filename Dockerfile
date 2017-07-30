@@ -16,6 +16,20 @@ ARG CONTAINER_VERSION
 ARG GIT_BRANCH
 ARG GIT_SHA
 
+# Build-time metadata as defined at http://label-schema.org
+# ARG BUILD_DATE
+# ARG VCS_REF
+# ARG VERSION
+LABEL \
+  org.label-schema.name="boss-docker-jhbuild-pygobject3" \
+  org.label-schema.description="Gnome x Jhbuild x PyGObject x Cmusphinx x Gtk+3 in Docker" \
+  org.label-schema.url="https://github.com/bossjones/boss-docker-jhbuild-pygobject3/" \
+  org.label-schema.vcs-ref=$GIT_SHA \
+  org.label-schema.vcs-url="https://github.com/bossjones/boss-docker-jhbuild-pygobject3" \
+  org.label-schema.vendor="Tonydark Labs" \
+  org.label-schema.version=$CONTAINER_VERSION \
+  org.label-schema.schema-version=$CONTAINER_VERSION
+
 ENV SCARLETT_ENABLE_SSHD ${SCARLETT_ENABLE_SSHD:-0}
 ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}
 ENV SCARLETT_BUILD_GNOME ${SCARLETT_BUILD_GNOME:-'true'}

@@ -11,7 +11,7 @@ DYNENV_UID=$(cat /etc/passwd | grep "^${DYNENV_USER}" | cut -d ":" -f3)
 DYNENV_GID=$(cat /etc/passwd | grep "^${DYNENV_USER}" | cut -d ":" -f4)
 DYNENV_HOME=$(homeof "${DYNENV_USER}")
 
-DYNENV_LOC=/run/user/${DYNENV_UID}/env/*
+DYNENV_LOC=/var/run/user/${DYNENV_UID}/env/*
 
 for f in $DYNENV_LOC; do
   env_variable_name="${f##*/}"

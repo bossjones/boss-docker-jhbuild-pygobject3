@@ -121,6 +121,7 @@ foreground {
     PID=$PID
     DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS
     s6-dumpenv -- /var/run/user/1000/env
+    foreground { chown pi:pi -R /var/run/user/1000/env }
   }
   s6-dumpenv -- /var/run/s6/container_environment
 }
