@@ -269,6 +269,8 @@ WORKDIR /home/$UNAME
 
 ENV HOME "/home/$UNAME"
 
+ENV CCACHE_DIR /ccache
+
 #------------------------------------ more changes
 
 

@@ -82,3 +82,5 @@ foreground: warning: unable to spawn s6-applyuidgid: Permission denied
 foreground: fatal: unable to wait for s6-applyuidgid: No child process
 d478bc28d79d:~#
 ```
+
+h. More all dependencies into other repo before this, named https://github.com/bossjones/boss-docker-base-gtk3-deps ... this will include all user related stuff, `apt-fast installs`, `folder setup, etc`. Then we'll have boss-docker-jhbuild inherit from that to speed up builds. It'll take care of compiling only. We can even do jhbuild compiling stuff in different dockerfile and save the jhbuild folder with it. Then, when needed, we call that file down, which will move the `gnome` folder and `jhbuild` folder to a volume mount, then we have boss-docker-jhbuild-pygobject mount it into place and commit it to a layer. Finally we push that up and have scarlett_os pull that guy down. Should help speed up builds a bit in multiple places.
