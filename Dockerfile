@@ -1179,7 +1179,10 @@ RUN bash /prep-pi.sh && \
     pip install --user powerline-status && \
     git config --global core.editor "vim" && \
     git config --global push.default simple && \
-    git config --global color.ui true
+    git config --global color.ui true && \
+    sudo mv /home/pi/.ssh /home/pi/.ssh.bak && \
+    sudo mv /home/pi/.ssh.bak /home/pi/.ssh && \
+    ls -lta /home/pi/.ssh
 
 # DISABLED # # Install jhbuild stuff
 # DISABLED # RUN bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
@@ -1198,7 +1201,10 @@ USER root
 # we need to run our scripts correctly
 RUN bash /prep-pi.sh && \
     bash /scripts/write_xdg_dir_init.sh "pi" && \
-    bash /scripts/write_xdg_dir_init.sh "root"
+    bash /scripts/write_xdg_dir_init.sh "root"; \
+
+    mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
+    ls -lta /artifacts
 
 # DISABLED # # Make sure the ruby2.2 packages are installed (Debian)
 # DISABLED # RUN add-apt-repository -y ppa:brightbox/ruby-ng && \
@@ -1322,15 +1328,15 @@ RUN bash /prep-pi.sh && \
 # DISABLED #     && chown pi:pi /home/pi/.bash_history \
 # DISABLED #     && chmod 0600 /home/pi/.bash_history
 
-# NOTE: Temp run install as pi user
-USER $UNAME
+# # NOTE: Temp run install as pi user
+# USER $UNAME
 
-# Fixes wierd ssh permission issue
-RUN sudo mv /home/pi/.ssh /home/pi/.ssh.bak && \
-    sudo mv /home/pi/.ssh.bak /home/pi/.ssh && \
-    ls -lta /home/pi/.ssh
+# # Fixes wierd ssh permission issue
+# RUN sudo mv /home/pi/.ssh /home/pi/.ssh.bak && \
+#     sudo mv /home/pi/.ssh.bak /home/pi/.ssh && \
+#     ls -lta /home/pi/.ssh
 
-USER root
+# USER root
 
 # -rw-------  1 root root   22 Jul 17 16:55 .bash_history
 
@@ -1345,8 +1351,8 @@ USER root
 # EDGE=0
 # source: https://github.com/hurricanehrndz/docker-containers/blob/64fe4f2f0975587a00d180330b19e0aa7596581f/headphones/Dockerfile
 
-RUN mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
-    ls -lta /artifacts
+# RUN mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
+#     ls -lta /artifacts
 
 CMD ["/bin/bash", "/run.sh"]
 
