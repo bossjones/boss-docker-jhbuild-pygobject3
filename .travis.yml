@@ -60,11 +60,11 @@ branches:
 ###################################################################################################
 # IMPORTANT: Failure in this phase does not mark the job as failed.
 ###################################################################################################
-# before_cache:
-#   # Save tagged docker images
-#   - >
-#     mkdir -p $HOME/docker && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
-#     | xargs -n 2 -t sh -c 'test -e $HOME/docker/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker/$1.tar.gz'
+before_cache:
+  # Save tagged docker images
+  - >
+    mkdir -p $HOME/docker && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
+    | xargs -n 2 -t sh -c 'test -e $HOME/docker/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker/$1.tar.gz'
 
 # before_install:
 # - if [ -f ${CI_CACHE_FILE_PYTHON} ]; then ls -lta ${CI_CACHE_FILE_PYTHON}; fi

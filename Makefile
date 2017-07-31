@@ -103,6 +103,7 @@ test-bak:
 test-travis:
 	docker run \
 	    -i -t \
+	    --rm \
         -e CONTAINER_VERSION=$(CONTAINER_VERSION) \
         -e GIT_BRANCH=$(GIT_BRANCH) \
         -e GIT_SHA=$(GIT_SHA) \
