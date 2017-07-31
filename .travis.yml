@@ -72,15 +72,11 @@ before_cache:
 # - if [ -f ${CI_CACHE_FILE_PYTHON} ]; then gunzip -c ${CI_CACHE_FILE_PYTHON} | docker load; fi
 # - if [ -f ${CI_CACHE_FILE_GTK} ]; then gunzip -c ${CI_CACHE_FILE_GTK} | docker load; fi
 
-before_install:
-  # Load cached docker images
-  - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
+# before_install:
+#   # Load cached docker images
+#   - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
 
 install:
-  # - mkdir -p $CI_CACHE_DIR
-  # - if [ ! -f ${CI_CACHE_FILE_PYTHON} ]; then docker save bossjones/boss-docker-python3:latest | gzip > ${CI_CACHE_FILE_PYTHON}; fi
-  # - if [ ! -f ${CI_CACHE_FILE_GTK} ]; then docker save bossjones/boss-docker-base-gtk3-deps:0.1.0 | gzip > ${CI_CACHE_FILE_GTK}; fi
-  # - travis_retry docker-compose pull
   - bundle install
   # set containers as privileged to bypass Travis environment limitations
   # NOTE: Before the docker-compose.test.yml modification this worked correctly:
@@ -94,6 +90,19 @@ script:
   # run goss tests next
   # - travis_retry docker-compose -f docker-compose.test.yml -f ci_build.yml up --build
   - make docker_build_and_tag
+  - >
+    docker run \
+        -e CONTAINER_VERSION=$(CONTAINER_VERSION) \
+        -e GIT_BRANCH=$(GIT_BRANCH) \
+        -e GIT_SHA=$(GIT_SHA) \
+        -e BUILD_DATE=$(BUILD_DATE) \
+        -e SCARLETT_ENABLE_SSHD=0 \
+        -e SCARLETT_ENABLE_DBUS='true' \
+        -e SCARLETT_BUILD_GNOME='true' \
+        -e TRAVIS_CI='true' \
+        -e STOP_AFTER_GOSS_JHBUILD='true' \
+        -e STOP_AFTER_GOSS_GTK_DEPS='false' \
+        bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA)
   # - if [[ ${TRAVIS_BRANCH} == "master" ]] && [[ ${TRAVIS_PULL_REQUEST} == "false" ]]; then mkdir -p $(dirname ${DOCKER_CACHE_FILE}) ; docker save $(docker history -q ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} | grep -v '<missing>') | gzip > ${DOCKER_CACHE_FILE}; fi
 
 # source: https://github.com/inspirehep/inspire-next/blob/9700274c36074a3e43168bf48b8ba3e3bfa7bcdf/.travis.yml
