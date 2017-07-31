@@ -10,6 +10,9 @@ matrix:
       DOCKER_DATA: "$HOME/docker_data"
       DOCKER_VERSION: 17.03.1~ce-0~ubuntu-trusty
       DOCKER_COMPOSE_VERSION: 1.8.0
+      CI_CACHE_DIR: "$HOME/.cache/docker"
+      CI_CACHE_FILE_PYTHON: "$CI_CACHE_DIR/python3.tar.gz"
+      CI_CACHE_FILE_GTK: "$CI_CACHE_DIR/gtk3.tar.gz"
     sudo: required
     dist: trusty
     language: python
@@ -36,12 +39,21 @@ before_install:
 
 cache:
   apt: true
+  directories:
+  - $CI_CACHE_DIR
+
+before_install:
+- if [ -f ${CI_CACHE_FILE_PYTHON} ]; then gunzip -c ${CI_CACHE_FILE_PYTHON} | docker load; fi
+- if [ -f ${CI_CACHE_FILE_GTK} ]; then gunzip -c ${CI_CACHE_FILE_GTK} | docker load; fi
 
 install:
+  - mkdir -p $CI_CACHE_DIR
+  - if [ ! -f ${CI_CACHE_FILE_PYTHON} ]; then docker save bossjones/boss-docker-python3:latest | gzip > ${CI_CACHE_FILE_PYTHON}; fi
+  - if [ ! -f ${CI_CACHE_FILE_GTK} ]; then docker save bossjones/boss-docker-base-gtk3-deps:0.1.0 | gzip > ${CI_CACHE_FILE_GTK}; fi
   - travis_retry docker-compose pull
   # set containers as privileged to bypass Travis environment limitations
   # NOTE: Before the docker-compose.test.yml modification this worked correctly:
-  - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
+  # - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
   # NOTE: When we move to docker-compose v2+ uncomment this below
   # - 'sed -i "/dockerfile: Dockerfile/a \ \ \ \ privileged: true" docker-compose.test.yml'
 

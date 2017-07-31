@@ -93,6 +93,7 @@ multisubstitute
   importas XDG_RUNTIME_DIR XDG_RUNTIME_DIR
   importas SIGNAL_BUILD_STOP SIGNAL_BUILD_STOP
   importas TRAVIS_CI TRAVIS_CI
+  importas STOP_AFTER_GOSS_JHBUILD STOP_AFTER_GOSS_JHBUILD
 }
 
 ################################################################################
@@ -129,16 +130,16 @@ foreground {
         importas REXIT ?
         foreground { s6-echo " [run] goss exited ${REXIT}." }
         foreground { s6-echo " [run] goss tests ran succesfully fool" }
-        foreground {
-            if -n { s6-test -f /home/pi/gnome } foreground { s6-echo " [run] s6-test -f /home/pi/gnome == TRUE" }
-            # TODO: consider turning this into a rsync
-            cp -a /home/pi/gnome /artifacts/
-        }
-        foreground {
-            if -n { s6-test -f /home/pi/jhbuild } foreground { s6-echo " [run] s6-test -f /home/pi/jhbuild == TRUE" }
-            # TODO: consider turning this into a rsync
-            cp -a /home/pi/jhbuild /artifacts/
-        }
+        # foreground {
+        #     if -n { s6-test -f /home/pi/gnome } foreground { s6-echo " [run] s6-test -f /home/pi/gnome == TRUE" }
+        #     # TODO: consider turning this into a rsync
+        #     cp -a /home/pi/gnome /artifacts/
+        # }
+        # foreground {
+        #     if -n { s6-test -f /home/pi/jhbuild } foreground { s6-echo " [run] s6-test -f /home/pi/jhbuild == TRUE" }
+        #     # TODO: consider turning this into a rsync
+        #     cp -a /home/pi/jhbuild /artifacts/
+        # }
     }
 }
 
@@ -147,7 +148,7 @@ foreground { s6-echo " [run] AFTER foreground goss tests" }
 
 # NOTE: if program
 # -t = exit 0 if test fails
-if -t { s6-test $TRAVIS_CI = true } foreground { s6-echo " [run] TRAVIS_CI: '${TRAVIS_CI}' ... sending signal build stop" }
+if -t { s6-test $STOP_AFTER_GOSS_JHBUILD = true } foreground { s6-echo " [run] STOP_AFTER_GOSS_JHBUILD: '${STOP_AFTER_GOSS_JHBUILD}' ... sending signal build stop" }
 exit ${SIGNAL_BUILD_STOP}
 
 ######################################################################

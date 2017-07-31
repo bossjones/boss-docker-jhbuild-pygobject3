@@ -180,6 +180,8 @@ docker_build_and_tag:
 	    --build-arg SCARLETT_ENABLE_DBUS='true' \
 	    --build-arg SCARLETT_BUILD_GNOME='true' \
 	    --build-arg TRAVIS_CI='true' \
+	    --build-arg STOP_AFTER_GOSS_JHBUILD='true' \
+	    --build-arg STOP_AFTER_GOSS_GTK_DEPS='false' \
 		--file=Dockerfile \
 	    --tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) . ; \
 	docker tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) bossjones/boss-docker-jhbuild-pygobject3:$(TAG) ; \
