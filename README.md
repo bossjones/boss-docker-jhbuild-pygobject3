@@ -3,9 +3,10 @@
 Gnome x Jhbuild x PyGObject x Cmusphinx x Gtk+3 in 🐳
 
 
-[![Build History](https://buildstats.info/travisci/chart/bossjones/boss-docker-jhbuild-pygobject3)](https://travis-ci.org/bossjones/boss-docker-jhbuild-pygobject3)
-
 [![Build Status](https://travis-ci.org/bossjones/boss-docker-jhbuild-pygobject3.svg?branch=master)](https://travis-ci.org/bossjones/boss-docker-jhbuild-pygobject3)
+
+[![Build History](https://buildstats.info/travisci/chart/bossjones/boss-docker-jhbuild-pygobject3?includeBuildsFromPullRequest=true)](https://travis-ci.org/bossjones/boss-docker-jhbuild-pygobject3?includeBuildsFromPullRequest=true)
+
 [![GitHub release](https://img.shields.io/github/release/bossjones/boss-docker-jhbuild-pygobject3.svg)]()
 [![Docker Stars](https://img.shields.io/docker/stars/bossjones/boss-docker-jhbuild-pygobject3.svg)](https://hub.docker.com/r/bossjones/boss-docker-jhbuild-pygobject3/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/bossjones/boss-docker-jhbuild-pygobject3.svg)](https://hub.docker.com/r/bossjones/boss-docker-jhbuild-pygobject3/)
@@ -108,6 +109,7 @@ As part of the process manager, these scripts are run in advance of the supervis
 
 # Optional Arguments
 
+
 Variable | Example | Description
 --- | --- | ---
 `SCARLETT_ENABLE_SSHD` | `SCARLETT_ENABLE_SSHD=0` | When set to 0, openssh-server will be enabled for development use w/ VSCode or Sublime
@@ -115,4 +117,15 @@ Variable | Example | Description
 `SCARLETT_BUILD_GNOME` | `SCARLETT_BUILD_GNOME='true'` | When set, jhbuild and deps will be compiled
 `TRAVIS_CI` | `TRAVIS_CI='true'` | Signal s6 to stop when finished all run.d scripts. Important for CI builds.
 
+# Another way to run code coverage after build is finished
+
+source: https://github.com/mozmeao/snippets-service/blob/5b3bb166d9fbfef693e1415cade3c2aa188ee65a/.travis.yml
+
+```
+    after_success:
+    - sudo docker cp `docker ps -a -q | head -n 1`:/app /
+    - sudo chown travis /app
+    - cd /app
+    - pip install codecov
+    - codecov
 ```

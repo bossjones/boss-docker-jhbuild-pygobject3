@@ -17,6 +17,7 @@ ARG STOP_AFTER_GOSS_GTK_DEPS
 ARG CONTAINER_VERSION
 ARG GIT_BRANCH
 ARG GIT_SHA
+ARG BUILD_DATE
 
 # Build-time metadata as defined at http://label-schema.org
 # ARG BUILD_DATE
@@ -26,11 +27,12 @@ LABEL \
   org.label-schema.name="boss-docker-jhbuild-pygobject3" \
   org.label-schema.description="Gnome x Jhbuild x PyGObject x Cmusphinx x Gtk+3 in Docker" \
   org.label-schema.url="https://github.com/bossjones/boss-docker-jhbuild-pygobject3/" \
-  org.label-schema.vcs-ref=$GIT_SHA \
+  org.label-schema.vcs-ref=${GIT_SHA:-''} \
   org.label-schema.vcs-url="https://github.com/bossjones/boss-docker-jhbuild-pygobject3" \
   org.label-schema.vendor="Tonydark Labs" \
-  org.label-schema.version=$CONTAINER_VERSION \
-  org.label-schema.schema-version=$CONTAINER_VERSION
+  org.label-schema.version=${CONTAINER_VERSION:-''} \
+  org.label-schema.schema-version="1.0" \
+  org.label-schema.build-date=${BUILD_DATE:-''}
 
 ENV SCARLETT_ENABLE_SSHD ${SCARLETT_ENABLE_SSHD:-0}
 ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}

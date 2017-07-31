@@ -3,9 +3,12 @@ projects := boss-docker-jhbuild-pygobject3
 username := bossjones
 container_name := boss-docker-jhbuild-pygobject3
 
+# label-schema spec: http://label-schema.org/rc1/
+
 CONTAINER_VERSION  = $(shell \cat ./VERSION | awk '{print $1}')
 GIT_BRANCH  = $(shell git rev-parse --abbrev-ref HEAD)
 GIT_SHA     = $(shell git rev-parse HEAD)
+BUILD_DATE  = $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # NOTE: DEFAULT_GOAL
 # source: (GNU Make - Other Special Variables) https://www.gnu.org/software/make/manual/html_node/Special-Variables.html
@@ -176,6 +179,7 @@ docker_build_and_tag:
 	    --build-arg CONTAINER_VERSION=$(CONTAINER_VERSION) \
 	    --build-arg GIT_BRANCH=$(GIT_BRANCH) \
 	    --build-arg GIT_SHA=$(GIT_SHA) \
+	    --build-arg BUILD_DATE=$(BUILD_DATE) \
 	    --build-arg SCARLETT_ENABLE_SSHD=0 \
 	    --build-arg SCARLETT_ENABLE_DBUS='true' \
 	    --build-arg SCARLETT_BUILD_GNOME='true' \

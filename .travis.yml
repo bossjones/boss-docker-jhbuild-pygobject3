@@ -88,13 +88,14 @@ install:
 script:
   # - travis_retry docker-compose -f docker-compose.yml -f ci_build.yml build
   # run goss tests next
-  - travis_retry docker-compose -f docker-compose.test.yml -f ci_build.yml up --build
+  # - travis_retry docker-compose -f docker-compose.test.yml -f ci_build.yml up --build
+  - make docker_build_and_tag
   # - if [[ ${TRAVIS_BRANCH} == "master" ]] && [[ ${TRAVIS_PULL_REQUEST} == "false" ]]; then mkdir -p $(dirname ${DOCKER_CACHE_FILE}) ; docker save $(docker history -q ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} | grep -v '<missing>') | gzip > ${DOCKER_CACHE_FILE}; fi
 
 # source: https://github.com/inspirehep/inspire-next/blob/9700274c36074a3e43168bf48b8ba3e3bfa7bcdf/.travis.yml
 after_script:
   # Killing via SIGTERM in order to trigger atexit and dump coverage information in WSGI
-  - "docker-compose -f docker-compose.test.yml kill -s SIGTERM"
+  # - "docker-compose -f docker-compose.test.yml kill -s SIGTERM"
   - "docker images"
   - "docker ps -a"
 
