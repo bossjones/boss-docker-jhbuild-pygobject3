@@ -43,6 +43,8 @@ cache:
   - $CI_CACHE_DIR
 
 before_install:
+- if [ -f ${CI_CACHE_FILE_PYTHON} ]; then ls -lta ${CI_CACHE_FILE_PYTHON}; fi
+- if [ -f ${CI_CACHE_FILE_GTK} ]; then ls -lta ${CI_CACHE_FILE_GTK}; fi
 - if [ -f ${CI_CACHE_FILE_PYTHON} ]; then gunzip -c ${CI_CACHE_FILE_PYTHON} | docker load; fi
 - if [ -f ${CI_CACHE_FILE_GTK} ]; then gunzip -c ${CI_CACHE_FILE_GTK} | docker load; fi
 
