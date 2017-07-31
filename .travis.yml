@@ -90,19 +90,7 @@ script:
   # run goss tests next
   # - travis_retry docker-compose -f docker-compose.test.yml -f ci_build.yml up --build
   - make docker_build_and_tag
-  - >
-    docker run \
-        -e CONTAINER_VERSION=$(CONTAINER_VERSION) \
-        -e GIT_BRANCH=$(GIT_BRANCH) \
-        -e GIT_SHA=$(GIT_SHA) \
-        -e BUILD_DATE=$(BUILD_DATE) \
-        -e SCARLETT_ENABLE_SSHD=0 \
-        -e SCARLETT_ENABLE_DBUS='true' \
-        -e SCARLETT_BUILD_GNOME='true' \
-        -e TRAVIS_CI='true' \
-        -e STOP_AFTER_GOSS_JHBUILD='true' \
-        -e STOP_AFTER_GOSS_GTK_DEPS='false' \
-        bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA)
+  - make test-travis
   # - if [[ ${TRAVIS_BRANCH} == "master" ]] && [[ ${TRAVIS_PULL_REQUEST} == "false" ]]; then mkdir -p $(dirname ${DOCKER_CACHE_FILE}) ; docker save $(docker history -q ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} | grep -v '<missing>') | gzip > ${DOCKER_CACHE_FILE}; fi
 
 # source: https://github.com/inspirehep/inspire-next/blob/9700274c36074a3e43168bf48b8ba3e3bfa7bcdf/.travis.yml

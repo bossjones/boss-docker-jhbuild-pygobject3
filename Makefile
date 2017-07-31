@@ -100,6 +100,21 @@ test:
 test-bak:
 	@docker-compose -f docker-compose.bak.yml -f ci_build_v2.yml up --build
 
+test-travis:
+	docker run \
+	    -i -t \
+        -e CONTAINER_VERSION=$(CONTAINER_VERSION) \
+        -e GIT_BRANCH=$(GIT_BRANCH) \
+        -e GIT_SHA=$(GIT_SHA) \
+        -e BUILD_DATE=$(BUILD_DATE) \
+        -e SCARLETT_ENABLE_SSHD=0 \
+        -e SCARLETT_ENABLE_DBUS='true' \
+        -e SCARLETT_BUILD_GNOME='true' \
+        -e TRAVIS_CI='true' \
+        -e STOP_AFTER_GOSS_JHBUILD='true' \
+        -e STOP_AFTER_GOSS_GTK_DEPS='false' \
+        bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA)
+
 # 4 – Creating Dedicated Data Volume Containers
 # source: http://www.tricksofthetrades.net/2016/03/14/docker-data-volumes/
 # A popular practice with Docker data sharing is to create a dedicated container that holds all of your persistent shareable data resources,
@@ -192,7 +207,7 @@ docker_build_and_tag:
 	docker tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) bossjones/boss-docker-jhbuild-pygobject3:latest
 
 docker_build_and_tag_push: docker_build_and_tag
-  docker push bossjones/boss-docker-jhbuild-pygobject3
+	docker push bossjones/boss-docker-jhbuild-pygobject3
 
 docker_build_compile_jhbuild:
 	@docker build \
