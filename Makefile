@@ -113,7 +113,7 @@ test-travis:
         -e TRAVIS_CI='true' \
         -e STOP_AFTER_GOSS_JHBUILD='true' \
         -e STOP_AFTER_GOSS_GTK_DEPS='false' \
-        bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA)
+        bossjones/boss-docker-jhbuild-pygobject3:latest
 
 # 4 – Creating Dedicated Data Volume Containers
 # source: http://www.tricksofthetrades.net/2016/03/14/docker-data-volumes/
