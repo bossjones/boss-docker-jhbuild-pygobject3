@@ -13,6 +13,8 @@ matrix:
       CI_CACHE_DIR: "$HOME/.cache/docker"
       CI_CACHE_FILE_PYTHON: "$CI_CACHE_DIR/python3.tar.gz"
       CI_CACHE_FILE_GTK: "$CI_CACHE_DIR/gtk3.tar.gz"
+      DOCKER_CACHE_FILE: "$HOME/docker/cache.tar.gz"
+      CI_CACHE_DIR_DOCKER: "$HOME/docker"
     sudo: required
     dist: trusty
     language: python
@@ -36,33 +38,58 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - docker-compose --version
+  # - if [ -f ${DOCKER_CACHE_FILE} ]; then gunzip -c ${DOCKER_CACHE_FILE} | docker load; fi
+
+# cach-ing docker images
+# source: https://giorgos.sealabs.net/docker-cache-on-travis-and-docker-112.html
 
 cache:
   apt: true
+  bundler: true
   directories:
-  - $CI_CACHE_DIR
+  - $CI_CACHE_DIR_DOCKER
+
+# When using caches, it may be useful to run a command just before uploading the new cache archive.
+# For example, the dependency management utility may write log files into the directory you are
+# caching and you do not want them to affect the cache.
+# Use the before_cache phase to delete the log files:
+###################################################################################################
+# IMPORTANT: Failure in this phase does not mark the job as failed.
+###################################################################################################
+before_cache:
+  # Save tagged docker images
+  - >
+    mkdir -p $HOME/docker && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
+    | xargs -n 2 -t sh -c 'test -e $HOME/docker/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker/$1.tar.gz'
+
+# before_install:
+# - if [ -f ${CI_CACHE_FILE_PYTHON} ]; then ls -lta ${CI_CACHE_FILE_PYTHON}; fi
+# - if [ -f ${CI_CACHE_FILE_GTK} ]; then ls -lta ${CI_CACHE_FILE_GTK}; fi
+# - if [ -f ${CI_CACHE_FILE_PYTHON} ]; then gunzip -c ${CI_CACHE_FILE_PYTHON} | docker load; fi
+# - if [ -f ${CI_CACHE_FILE_GTK} ]; then gunzip -c ${CI_CACHE_FILE_GTK} | docker load; fi
 
 before_install:
-- if [ -f ${CI_CACHE_FILE_PYTHON} ]; then ls -lta ${CI_CACHE_FILE_PYTHON}; fi
-- if [ -f ${CI_CACHE_FILE_GTK} ]; then ls -lta ${CI_CACHE_FILE_GTK}; fi
-- if [ -f ${CI_CACHE_FILE_PYTHON} ]; then gunzip -c ${CI_CACHE_FILE_PYTHON} | docker load; fi
-- if [ -f ${CI_CACHE_FILE_GTK} ]; then gunzip -c ${CI_CACHE_FILE_GTK} | docker load; fi
+  # Load cached docker images
+  - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
 
 install:
-  - mkdir -p $CI_CACHE_DIR
-  - if [ ! -f ${CI_CACHE_FILE_PYTHON} ]; then docker save bossjones/boss-docker-python3:latest | gzip > ${CI_CACHE_FILE_PYTHON}; fi
-  - if [ ! -f ${CI_CACHE_FILE_GTK} ]; then docker save bossjones/boss-docker-base-gtk3-deps:0.1.0 | gzip > ${CI_CACHE_FILE_GTK}; fi
-  - travis_retry docker-compose pull
+  # - mkdir -p $CI_CACHE_DIR
+  # - if [ ! -f ${CI_CACHE_FILE_PYTHON} ]; then docker save bossjones/boss-docker-python3:latest | gzip > ${CI_CACHE_FILE_PYTHON}; fi
+  # - if [ ! -f ${CI_CACHE_FILE_GTK} ]; then docker save bossjones/boss-docker-base-gtk3-deps:0.1.0 | gzip > ${CI_CACHE_FILE_GTK}; fi
+  # - travis_retry docker-compose pull
+  - bundle install
   # set containers as privileged to bypass Travis environment limitations
   # NOTE: Before the docker-compose.test.yml modification this worked correctly:
   # - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
   # NOTE: When we move to docker-compose v2+ uncomment this below
   # - 'sed -i "/dockerfile: Dockerfile/a \ \ \ \ privileged: true" docker-compose.test.yml'
 
+# IMPORTANT: caching ... It's important that docker save happens in script step because right after this step Travis will save the contents of the cached directory.
 script:
   # - travis_retry docker-compose -f docker-compose.yml -f ci_build.yml build
   # run goss tests next
   - travis_retry docker-compose -f docker-compose.test.yml -f ci_build.yml up --build
+  # - if [[ ${TRAVIS_BRANCH} == "master" ]] && [[ ${TRAVIS_PULL_REQUEST} == "false" ]]; then mkdir -p $(dirname ${DOCKER_CACHE_FILE}) ; docker save $(docker history -q ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} | grep -v '<missing>') | gzip > ${DOCKER_CACHE_FILE}; fi
 
 # source: https://github.com/inspirehep/inspire-next/blob/9700274c36074a3e43168bf48b8ba3e3bfa7bcdf/.travis.yml
 after_script:
