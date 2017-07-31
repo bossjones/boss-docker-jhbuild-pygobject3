@@ -103,10 +103,10 @@ after_script:
   - "docker images"
   - "docker ps -a"
 
-
 after_failure:
   - "docker images"
   - "docker ps -a"
+  - "ls -lta $HOME/docker"
 
 notifications:
   email:
