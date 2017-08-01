@@ -224,7 +224,7 @@ docker_build_compile_jhbuild:
 	    --build-arg TRAVIS_CI='true' \
 	    --build-arg STOP_AFTER_GOSS_JHBUILD='true' \
 	    --build-arg STOP_AFTER_GOSS_GTK_DEPS='false' \
-		--file=Dockerfile.compile \
+		--file=Dockerfile.compile.build \
 	    --tag $(username)/$(container_name)-compile:latest . ;
 
 version: ## Parse version from ./VERSION
