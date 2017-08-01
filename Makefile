@@ -212,6 +212,7 @@ docker_build_and_tag_push: docker_build_and_tag
 
 docker_build_compile_jhbuild:
 	set -x ;\
+	mkdir -p ccache; \
 	docker build \
 	    --build-arg CONTAINER_VERSION=$(CONTAINER_VERSION) \
 	    --build-arg GIT_BRANCH=$(GIT_BRANCH) \
