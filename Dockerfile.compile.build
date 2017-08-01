@@ -204,9 +204,9 @@ RUN \
     echo "TRAVIS_CI: ${TRAVIS_CI}" && \
     bash /prep-pi.sh && \
     sudo chmod +x /prep-pi.sh /scripts/write_xdg_dir_init.sh && \
-    /prep-pi.sh && \
-    /scripts/write_xdg_dir_init.sh "pi" && \
-    /scripts/write_xdg_dir_init.sh "root"; \
+    sudo bash /prep-pi.sh && \
+    sudo bash /scripts/write_xdg_dir_init.sh "pi" && \
+    sudo bash /scripts/write_xdg_dir_init.sh "root"; \
     sudo mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
     ls -lta /artifacts
 
