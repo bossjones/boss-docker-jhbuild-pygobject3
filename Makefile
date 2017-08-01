@@ -211,12 +211,20 @@ docker_build_and_tag_push: docker_build_and_tag
 	docker push bossjones/boss-docker-jhbuild-pygobject3
 
 docker_build_compile_jhbuild:
-	@docker build \
-	--build-arg SCARLETT_ENABLE_SSHD=0 \
-	--build-arg SCARLETT_ENABLE_DBUS='true' \
-	--build-arg SCARLETT_BUILD_GNOME='true' \
-	--build-arg TRAVIS_CI='true' \
-	-t $(username)/$(container_name)-compile:latest .
+	set -x ;\
+	docker build \
+	    --build-arg CONTAINER_VERSION=$(CONTAINER_VERSION) \
+	    --build-arg GIT_BRANCH=$(GIT_BRANCH) \
+	    --build-arg GIT_SHA=$(GIT_SHA) \
+	    --build-arg BUILD_DATE=$(BUILD_DATE) \
+	    --build-arg SCARLETT_ENABLE_SSHD=0 \
+	    --build-arg SCARLETT_ENABLE_DBUS='true' \
+	    --build-arg SCARLETT_BUILD_GNOME='true' \
+	    --build-arg TRAVIS_CI='true' \
+	    --build-arg STOP_AFTER_GOSS_JHBUILD='true' \
+	    --build-arg STOP_AFTER_GOSS_GTK_DEPS='false' \
+		--file=Dockerfile.compile \
+	    --tag $(username)/$(container_name)-compile:latest . ;
 
 version: ## Parse version from ./VERSION
 version:
