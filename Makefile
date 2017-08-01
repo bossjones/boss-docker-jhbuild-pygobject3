@@ -222,9 +222,8 @@ docker_build_compile_jhbuild:
 	    --build-arg SCARLETT_ENABLE_DBUS='true' \
 	    --build-arg SCARLETT_BUILD_GNOME='true' \
 	    --build-arg TRAVIS_CI='true' \
-	    --build-arg STOP_AFTER_GOSS_JHBUILD='true' \
+	    --build-arg STOP_AFTER_GOSS_JHBUILD='false' \
 	    --build-arg STOP_AFTER_GOSS_GTK_DEPS='false' \
-		--file=Dockerfile.compile.build \
 		-v ./ccache:/ccache \
 	    --tag $(username)/$(container_name)-compile:latest . ;
 
