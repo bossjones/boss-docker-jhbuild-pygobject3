@@ -244,7 +244,7 @@ docker_run_compile_jhbuild:
 	    -e STOP_AFTER_GOSS_GTK_DEPS='false' \
 	    -e SKIP_GOSS_TESTS_JHBUILD='true' \
 	    -e SKIP_GOSS_TESTS_GTK_DEPS='true' \
-		-v ccache:/ccache \
+		-v ccache:/ccache:rw \
 	    $(username)/$(container_name)-compile:latest /bin/bash /run.sh
 
 version: ## Parse version from ./VERSION
