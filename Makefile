@@ -232,6 +232,7 @@ docker_build_compile_jhbuild:
 docker_run_compile_jhbuild:
 	set -x ;\
 	docker run -i -t --rm \
+		--name jhbuild-compile \
 	    -e CONTAINER_VERSION=$(CONTAINER_VERSION) \
 	    -e GIT_BRANCH=$(GIT_BRANCH) \
 	    -e GIT_SHA=$(GIT_SHA) \
