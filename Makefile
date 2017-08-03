@@ -225,7 +225,6 @@ docker_build_compile_jhbuild:
 	    --build-arg STOP_AFTER_GOSS_JHBUILD='true' \
 	    --build-arg STOP_AFTER_GOSS_GTK_DEPS='false' \
 		--file=Dockerfile.compile.build \
-		-v ./ccache:/ccache \
 	    --tag $(username)/$(container_name)-compile:latest . ;
 
 docker_run_compile_jhbuild:
@@ -238,12 +237,11 @@ docker_run_compile_jhbuild:
 	    -e SCARLETT_ENABLE_SSHD=0 \
 	    -e SCARLETT_ENABLE_DBUS='true' \
 	    -e SCARLETT_BUILD_GNOME='true' \
-	    -e TRAVIS_CI='true' \
-	    -e STOP_AFTER_GOSS_JHBUILD='true' \
+	    -e TRAVIS_CI='false' \
+	    -e STOP_AFTER_GOSS_JHBUILD='false' \
 	    -e STOP_AFTER_GOSS_GTK_DEPS='false' \
-		--file=Dockerfile.compile.build \
-		-v ./ccache:/ccache \
-	    $(username)/$(container_name)-compile:latest bash
+		-v ccache:/ccache \
+	    $(username)/$(container_name)-compile:latest /bin/bash /run.sh
 
 version: ## Parse version from ./VERSION
 version:
