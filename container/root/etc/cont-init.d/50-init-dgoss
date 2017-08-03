@@ -20,6 +20,9 @@ with-contenv
 # NOTE: Echo status, then dump env program to stdout
 foreground { s6-echo " [run] env before multisubstitute" } s6-env
 
+if -t { s6-test $SKIP_GOSS_TESTS_JHBUILD = true } foreground { s6-echo " [run] SKIP_GOSS_TESTS_JHBUILD: '${SKIP_GOSS_TESTS_JHBUILD}' ... skipping ..." }
+exit 0
+
 # NOTE: s6-envuidgid program
 # s6-envuidgid potentially sets the UID,
 # GID and GIDLIST environment variables according to

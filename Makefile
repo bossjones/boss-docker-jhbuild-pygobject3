@@ -224,6 +224,8 @@ docker_build_compile_jhbuild:
 	    --build-arg TRAVIS_CI='true' \
 	    --build-arg STOP_AFTER_GOSS_JHBUILD='true' \
 	    --build-arg STOP_AFTER_GOSS_GTK_DEPS='false' \
+	    --build-arg SKIP_GOSS_TESTS_JHBUILD='true' \
+	    --build-arg SKIP_GOSS_TESTS_GTK_DEPS='true' \
 		--file=Dockerfile.compile.build \
 	    --tag $(username)/$(container_name)-compile:latest . ;
 
@@ -240,6 +242,8 @@ docker_run_compile_jhbuild:
 	    -e TRAVIS_CI='false' \
 	    -e STOP_AFTER_GOSS_JHBUILD='false' \
 	    -e STOP_AFTER_GOSS_GTK_DEPS='false' \
+	    -e SKIP_GOSS_TESTS_JHBUILD='true' \
+	    -e SKIP_GOSS_TESTS_GTK_DEPS='true' \
 		-v ccache:/ccache \
 	    $(username)/$(container_name)-compile:latest /bin/bash /run.sh
 
