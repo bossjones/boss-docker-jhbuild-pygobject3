@@ -97,6 +97,7 @@ multisubstitute
   importas SIGNAL_BUILD_STOP SIGNAL_BUILD_STOP
   importas TRAVIS_CI TRAVIS_CI
   importas STOP_AFTER_GOSS_JHBUILD STOP_AFTER_GOSS_JHBUILD
+  importas SKIP_GOSS_TESTS_JHBUILD SKIP_GOSS_TESTS_JHBUILD
 }
 
 ################################################################################

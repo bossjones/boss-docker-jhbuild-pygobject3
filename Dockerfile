@@ -1,4 +1,4 @@
-FROM bossjones/boss-docker-base-gtk3-deps:0.1.0
+FROM bossjones/boss-docker-base-gtk3-deps:0.2.0
 MAINTAINER Malcolm Jones <bossjones@theblacktonystark.com>
 
 # Prepare packaging environment
@@ -207,19 +207,27 @@ RUN \
     echo "SCARLETT_BUILD_GNOME: ${SCARLETT_BUILD_GNOME}" && \
     echo "TRAVIS_CI: ${TRAVIS_CI}" && \
     bash /prep-pi.sh && \
-    bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+    bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh && \
+    sudo bash /prep-pi.sh && \
+    sudo chmod +x /prep-pi.sh /scripts/write_xdg_dir_init.sh && \
+    sudo bash /prep-pi.sh && \
+    sudo bash /scripts/write_xdg_dir_init.sh "pi" && \
+    sudo bash /scripts/write_xdg_dir_init.sh "root"; \
+    sudo mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
+    ls -lta /artifacts
 
 # NOTE: Return to root user when finished
 USER root
 
 # NOTE: Prepare XDG_RUNTIME_DIR and everything else
 # we need to run our scripts correctly
-RUN bash /prep-pi.sh && \
-    bash /scripts/write_xdg_dir_init.sh "pi" && \
-    bash /scripts/write_xdg_dir_init.sh "root"; \
+# RUN bash /prep-pi.sh && \
+#     bash /scripts/write_xdg_dir_init.sh "pi" && \
+#     bash /scripts/write_xdg_dir_init.sh "root"; \
 
-    mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
-    ls -lta /artifacts
+#     mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
+#     ls -lta /artifacts
+
 
 CMD ["/bin/bash", "/run.sh"]
 
