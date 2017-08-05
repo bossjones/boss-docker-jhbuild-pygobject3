@@ -208,7 +208,8 @@ docker_build_and_tag:
 	docker tag bossjones/boss-docker-jhbuild-pygobject3:$(GIT_SHA) bossjones/boss-docker-jhbuild-pygobject3:latest
 
 docker_build_and_tag_push: docker_build_and_tag
-	docker push bossjones/boss-docker-jhbuild-pygobject3
+	docker push $(username)/$(container_name):$(TAG)
+	docker push $(username)/$(container_name):latest
 
 docker_build_compile_jhbuild:
 	set -x ;\
