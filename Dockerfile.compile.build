@@ -1,4 +1,4 @@
-FROM bossjones/boss-docker-base-gtk3-deps:0.1.0
+FROM bossjones/boss-docker-base-gtk3-deps:0.2.0
 MAINTAINER Malcolm Jones <bossjones@theblacktonystark.com>
 
 # Prepare packaging environment
