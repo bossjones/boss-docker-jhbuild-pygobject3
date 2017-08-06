@@ -15,7 +15,7 @@ matrix:
       CI_CACHE_FILE_GTK: "$CI_CACHE_DIR/gtk3.tar.gz"
       DOCKER_CACHE_FILE: "$HOME/docker/cache.tar.gz"
       CI_CACHE_DIR_DOCKER: "$HOME/docker"
-    sudo: false
+    sudo: required
     dist: trusty
     language: python
     group: edge
