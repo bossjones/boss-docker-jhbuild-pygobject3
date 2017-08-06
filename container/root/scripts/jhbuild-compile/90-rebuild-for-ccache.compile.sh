@@ -85,6 +85,7 @@ cd $JHBUILD/sphinxbase && \
 jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild > /dev/null && \
 jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \
 jhbuild run make clean all > /dev/null && \
+jhbuild run make check > /dev/null && \
 jhbuild run make install > /dev/null && \
 
 echo "****************[POCKETSPHINX]****************" && \
@@ -93,4 +94,5 @@ cd pocketsphinx && \
 jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild > /dev/null && \
 jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \
 jhbuild run make clean all > /dev/null && \
+jhbuild run make check > /dev/null && \
 jhbuild run make install > /dev/null
