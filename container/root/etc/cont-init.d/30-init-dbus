@@ -49,6 +49,13 @@ trap -x
           kill -TERM ${PID}
           rm ${ADDRESS_FILE}
           rm ${PID_FILE}
+          rm /var/run/s6/container_environment/PID
+          rm /var/run/s6/container_environment/ADDRESS_FILE
+          rm /var/run/s6/container_environment/PID_FILE
+
+          rm /var/run/user/1000/env/PID
+          rm /var/run/user/1000/env/ADDRESS_FILE
+          rm /var/run/user/1000/env/PID_FILE
       }
     }
     s6-echo " [sigterm-dbus-daemon] graceful shutdown complete"
@@ -108,5 +115,13 @@ foreground {
   # DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS
 
   # persist them to disk so upstream containers can use it as well
+  foreground {
+    # persist to dynenv first
+    s6-env -i
+    PID=$PID
+    DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS
+    s6-dumpenv -- /var/run/user/1000/env
+    foreground { chown pi:pi -R /var/run/user/1000/env }
+  }
   s6-dumpenv -- /var/run/s6/container_environment
 }

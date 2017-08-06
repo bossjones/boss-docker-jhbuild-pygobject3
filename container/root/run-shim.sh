@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/usr/local/bin/with-dynenv bash
 
 echo "[run] Starting Pi."
 home="$(echo ~pi)"

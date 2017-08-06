@@ -1,234 +1,241 @@
 ---
 command:
-  echo $CC:
+  cat /var/run/user/1000/CC:
     exit-status: 0
     stdout:
       - 'gcc'
-  echo $CCACHE_DIR:
+  cat /var/run/user/1000/CCACHE_DIR:
     exit-status: 0
     stdout:
       - '/ccache'
-  echo $CFLAGS:
+  cat /var/run/user/1000/CFLAGS:
     exit-status: 0
     stdout:
       - '-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer'
-  echo $DEBIAN_FRONTEND:
+  cat /var/run/user/1000/DEBIAN_FRONTEND:
     exit-status: 0
     stdout:
       - 'noninteractive'
-  echo $ENABLE_GTK:
+  cat /var/run/user/1000/ENABLE_GTK:
     exit-status: 0
     stdout:
       - 'yes'
-  echo $ENABLE_PYTHON3:
+  cat /var/run/user/1000/ENABLE_PYTHON3:
     exit-status: 0
     stdout:
       - 'yes'
-  echo $GID:
+  cat /var/run/user/1000/GID:
     exit-status: 0
     stdout:
       - '1000'
-  echo $GITHUB_BRANCH:
+  cat /var/run/user/1000/GITHUB_BRANCH:
     exit-status: 0
     stdout:
       - 'master'
-  echo $GITHUB_REPO_NAME:
+  cat /var/run/user/1000/GITHUB_REPO_NAME:
     exit-status: 0
     stdout:
       - 'scarlett_os'
-  echo $GITHUB_REPO_ORG:
+  cat /var/run/user/1000/GITHUB_REPO_ORG:
     exit-status: 0
     stdout:
       - 'bossjones'
-  echo $GOSS_VERSION:
+  cat /var/run/user/1000/GOSS_VERSION:
     exit-status: 0
     stdout:
       - 'v0.2.3'
-  echo $GST_PLUGIN_PATH:
+  cat /var/run/user/1000/GST_PLUGIN_PATH:
     exit-status: 0
     stdout:
       - '/home/pi/.virtualenvs/scarlett_os/lib/gstreamer-1.0'
-  echo $GSTREAMER:
+  cat /var/run/user/1000/GSTREAMER:
     exit-status: 0
     stdout:
       - '1.0'
-  echo $HOME:
+  cat /var/run/user/1000/HOME:
     exit-status: 0
     stdout:
       - '/home/pi'
-  echo $JHBUILD:
+  cat /var/run/user/1000/JHBUILD:
     exit-status: 0
     stdout:
       - '/home/pi/gnome'
-  echo $LANG:
+  cat /var/run/user/1000/LANG:
     exit-status: 0
     stdout:
       - 'C.UTF-8'
-  echo $LANGUAGE_ID:
+  cat /var/run/user/1000/LANGUAGE_ID:
     exit-status: 0
     stdout:
       - '1473'
-  echo $LC_ALL:
+  cat /var/run/user/1000/LC_ALL:
     exit-status: 0
     stdout:
       - 'en_US.UTF-8'
-  echo $LD_LIBRARY_PATH:
+  cat /var/run/user/1000/LD_LIBRARY_PATH:
     exit-status: 0
     stdout:
       - '/home/pi/.virtualenvs/scarlett_os/lib'
-  echo $MAIN_DIR:
+  cat /var/run/user/1000/MAIN_DIR:
     exit-status: 0
     stdout:
       - '/home/pi/dev/bossjones-github/scarlett_os'
-  echo $MAKEFLAGS:
+  cat /var/run/user/1000/MAKEFLAGS:
     exit-status: 0
     stdout:
       - '-j4 V=1'
-  echo $NOT_ROOT_USER:
+  cat /var/run/user/1000/NOT_ROOT_USER:
     exit-status: 0
     stdout:
       - 'pi'
-  echo $NOTVISIBLE:
+  cat /var/run/user/1000/NOTVISIBLE:
     exit-status: 0
     stdout:
       - 'in users profile'
-  echo $PACKAGES:
+  cat /var/run/user/1000/PACKAGES:
     exit-status: 0
     stdout:
       - 'python3-gi python3-gi-cairo'
-  echo $PATH:
+  cat /var/run/user/1000/PATH:
     exit-status: 0
     stdout:
-      - '/usr/lib/ccache:/home/pi/bin:/home/pi/jhbuild/bin:/home/pi/jhbuild/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-  echo $PATH_TO_DOT_VIRTUALENV:
+      - '/home/pi/jhbuild/bin:/home/pi/jhbuild/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  cat /var/run/user/1000/PATH_TO_DOT_VIRTUALENV:
     exit-status: 0
     stdout:
       - '/home/pi/.virtualenvs'
-  echo $PI_HOME:
+  cat /var/run/user/1000/PI_HOME:
     exit-status: 0
     stdout:
       - '/home/pi'
-  echo $PIP_DOWNLOAD_CACHE:
+  cat /var/run/user/1000/PIP_DOWNLOAD_CACHE:
     exit-status: 0
     stdout:
       - '/home/pi/.pip/cache'
-  echo $PKG_CONFIG_PATH:
+  cat /var/run/user/1000/PKG_CONFIG_PATH:
     exit-status: 0
     stdout:
       - '/home/pi/.virtualenvs/scarlett_os/lib/pkgconfig'
-  echo $PREFIX:
+  cat /var/run/user/1000/PREFIX:
     exit-status: 0
     stdout:
       - '/home/pi/jhbuild'
-  echo $PROJECT_HOME:
+  cat /var/run/user/1000/PROJECT_HOME:
     exit-status: 0
     stdout:
       - '/home/pi/dev'
-  echo $PYTHON:
+  cat /var/run/user/1000/PYTHON:
     exit-status: 0
     stdout:
       - '/usr/local/bin/python3'
-  echo $PYTHONPATH:
+  cat /var/run/user/1000/PYTHONPATH:
     exit-status: 0
     stdout:
       - '/home/pi/jhbuild/lib/python3.5/site-packages:/usr/lib/python3.5/site-packages'
-  echo $PYTHON_PIP_VERSION:
+  cat /var/run/user/1000/PYTHON_PIP_VERSION:
     exit-status: 0
     stdout:
       - '8.1.2'
-  echo $PYTHONSTARTUP:
+  cat /var/run/user/1000/PYTHONSTARTUP:
     exit-status: 0
     stdout:
       - '/home/pi/.pythonrc'
-  echo $PYTHONUNBUFFERED:
+  cat /var/run/user/1000/PYTHONUNBUFFERED:
     exit-status: 0
     stdout:
       - '1'
-  echo $PYTHON_VERSION:
+  cat /var/run/user/1000/PYTHON_VERSION:
     exit-status: 0
     stdout:
       - '3.5'
-  echo $PYTHON_VERSION_MAJOR:
+  cat /var/run/user/1000/PYTHON_VERSION_MAJOR:
     exit-status: 0
     stdout:
       - '3'
-  echo $S6_VERSION:
+  cat /var/run/user/1000/S6_VERSION:
     exit-status: 0
     stdout:
       - 'v1.18.1.5'
-  echo $SCARLETT_CONFIG:
+  cat /var/run/user/1000/SCARLETT_CONFIG:
     exit-status: 0
     stdout:
       - '/home/pi/dev/bossjones-github/scarlett_os/tests/fixtures/.scarlett'
-  echo $SCARLETT_DICT:
+  cat /var/run/user/1000/SCARLETT_DICT:
     exit-status: 0
     stdout:
       - '/home/pi/dev/bossjones-github/scarlett_os/static/speech/dict/1473.dic'
-  echo $SCARLETT_HMM:
+  cat /var/run/user/1000/SCARLETT_HMM:
     exit-status: 0
     stdout:
       - '/home/pi/dev/bossjones-github/scarlett_os/static/speech/hmm/en_US/hub4wsj_sc_8k'
-  echo $SCARLETT_LM:
+  cat /var/run/user/1000/SCARLETT_LM:
     exit-status: 0
     stdout:
       - '/home/pi/dev/bossjones-github/scarlett_os/static/speech/lm/1473.lm'
-  echo $TERM:
+  cat /var/run/user/1000/TERM:
     exit-status: 0
     stdout:
       - 'xterm-256color'
-  echo $UID:
+  cat /var/run/user/1000/UID:
     exit-status: 0
     stdout:
       - '1000'
-  echo $UNAME:
+  cat /var/run/user/1000/UNAME:
     exit-status: 0
     stdout:
       - 'pi'
-  echo $USER:
+  cat /var/run/user/1000/USER:
     exit-status: 0
     stdout:
       - 'pi'
-  echo $USER_HOME:
+  cat /var/run/user/1000/USER_HOME:
     exit-status: 0
     stdout:
       - '/home/pi'
-  echo $USER_SSH_PUBKEY:
+  cat /var/run/user/1000/USER_SSH_PUBKEY:
     exit-status: 0
     stdout:
       - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key'
-  echo $VIRT_ROOT:
+  cat /var/run/user/1000/VIRT_ROOT:
     exit-status: 0
     stdout:
       - '/home/pi/.virtualenvs/scarlett_os'
-  echo $VIRTUALENVWRAPPER_PYTHON:
+  cat /var/run/user/1000/VIRTUALENVWRAPPER_PYTHON:
     exit-status: 0
     stdout:
       - '/usr/local/bin/python3'
-  echo $VIRTUALENVWRAPPER_SCRIPT:
+  cat /var/run/user/1000/VIRTUALENVWRAPPER_SCRIPT:
     exit-status: 0
     stdout:
       - '/usr/local/bin/virtualenvwrapper.sh'
-  echo $VIRTUALENV_WRAPPER_SH:
+  cat /var/run/user/1000/VIRTUALENV_WRAPPER_SH:
     exit-status: 0
     stdout:
       - '/usr/local/bin/virtualenvwrapper.sh'
-  echo $VIRTUALENVWRAPPER_VIRTUALENV:
+  cat /var/run/user/1000/VIRTUALENVWRAPPER_VIRTUALENV:
     exit-status: 0
     stdout:
       - '/usr/local/bin/virtualenv'
-  echo $WORKON_HOME:
+  cat /var/run/user/1000/WORKON_HOME:
     exit-status: 0
     stdout:
       - '/home/pi/.virtualenvs/scarlett_os'
-  echo $XDG_CONFIG_DIRS:
+  cat /var/run/user/1000/XDG_CONFIG_DIRS:
     exit-status: 0
     stdout:
       - '/home/pi/jhbuild/etc/xdg'
-  echo $XDG_DATA_DIRS:
+  cat /var/run/user/1000/XDG_DATA_DIRS:
     exit-status: 0
     stdout:
       - '/home/pi/jhbuild/share:/usr/share'
-  echo $XDG_RUNTIME_DIR:
+  cat /var/run/user/1000/XDG_RUNTIME_DIR:
     exit-status: 0
     stdout:
       - '/run/user/1000'
+  # Just verify that they exist
+  cat /var/run/user/1000/DBUS_SESSION_BUS_ADDRESS:
+    exit-status: 0
+  cat /var/run/user/1000/ADDRESS_FILE:
+    exit-status: 0
+  cat /var/run/user/1000/PID_FILE:
+    exit-status: 0

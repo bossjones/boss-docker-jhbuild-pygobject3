@@ -129,7 +129,7 @@ envvar PAGER            "less"
 # envvar HOME "/home/$UNAME"
 
 ######################################################################################
-# FIXME: We should change this to something more dramatic. Stop using hardcoded
+# FIXME: We should change this to something more dynamic. Stop using hardcoded
 ######################################################################################
 
 envvar CC "gcc"

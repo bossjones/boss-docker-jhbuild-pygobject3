@@ -1,4 +1,4 @@
-#   either ssh key or agent is needed to pull adobe-platform sources from git
+#   either ssh key or agent is needed to pull bossjones sources from git
 #   this supplies to methods
 
 set -o errexit
@@ -19,11 +19,11 @@ if [ ! -e /.dockerenv -o ! -z "$JENKINS_URL" ]; then
     echo
     set -x
     docker run -i --rm $SSH1 $SSH2 \
-        --name=flightdirector_make_docker_$TARGET \
+        --name=jhbuild_pygobject3_make_docker_$TARGET \
         -e sha=$SHA \
-        -v $PWD:/go/src/git.corp.adobe.com/adobe-platform/flight-director \
-        -w /go/src/git.corp.adobe.com/adobe-platform/flight-director \
-        adobe-platform/flight-director:dev \
+        -v $PWD:/home/pi/dev/bossjones-github/boss-docker-jhbuild-pygobject3 \
+        -w /home/pi/dev/bossjones-github/boss-docker-jhbuild-pygobject3 \
+        bossjones/boss-docker-jhbuild-pygobject3:dev \
         make $TARGET
 else
     make $TARGET

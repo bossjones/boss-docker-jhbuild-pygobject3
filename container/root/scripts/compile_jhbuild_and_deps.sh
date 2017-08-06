@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
-mkdir -p /home/pi/gnome
+if [[ ! -d "/home/pi/gnome" ]]; then
+  # Control will enter here if $DIRECTORY doesn't exist.
+  mkdir -p /home/pi/gnome
+fi
 
 # Install jhbuild if not done
 if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]] || [[ "${FORCE_BUILD_JHBUILD}" = "" ]]; then
     echo "****************[JHBUILD]****************" && \
     cd /home/pi && \
+
     if test ! -d /home/pi/jhbuild; then git clone https://github.com/GNOME/jhbuild.git && \
     cd jhbuild; else echo "exists" && cd jhbuild; fi && \
+
     git checkout 86d958b6778da649b559815c0a0dbe6a5d1a8cd4 && \
     ./autogen.sh --prefix=/usr/local > /dev/null && \
     make > /dev/null && \
@@ -17,26 +22,33 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
 
     echo "****************[GTK-DOC]****************" && \
     cd /home/pi/gnome && \
-    git clone https://github.com/GNOME/gtk-doc.git && \
+
+    if test ! -d /home/pi/gnome/gtk-doc; then git clone https://github.com/GNOME/gtk-doc.git && \
+    cd gtk-doc; else echo "****************[gtk-doc exists]****************" && cd gtk-doc; fi && \
+
     jhbuild buildone -n gtk-doc && \
 
     echo "****************[GLIB]****************" && \
     cd /home/pi/gnome && \
-    git clone https://github.com/GNOME/glib.git && \
-    cd glib && \
+
+    if test ! -d /home/pi/gnome/glib; then git clone https://github.com/GNOME/glib.git && \
+    cd glib; else echo "****************[glib exists]****************" && cd glib; fi && \
     git checkout eaca4f4116801f99e30e42a857559e19a1e6f4ce && \
     jhbuild buildone -n glib && \
 
     echo "****************[GOBJECT-INTROSPECTION]****************" && \
     cd /home/pi/gnome && \
-    git clone https://github.com/GNOME/gobject-introspection.git && \
-    cd gobject-introspection && \
+    if test ! -d /home/pi/gnome/gobject-introspection; then git clone https://github.com/GNOME/gobject-introspection.git && \
+    cd gobject-introspection; else echo "****************[gobject-introspection exists]****************" && cd gobject-introspection; fi && \
     git checkout cee2a4f215d5edf2e27b9964d3cfcb28a9d4941c && \
     jhbuild buildone -n gobject-introspection && \
 
     echo "****************[PYGOBJECT]****************" && \
     cd /home/pi/gnome && \
-    git clone https://github.com/GNOME/pygobject.git && \
+
+    if test ! -d /home/pi/gnome/pygobject; then git clone https://github.com/GNOME/pygobject.git && \
+    cd pygobject; else echo "****************[pygobject exists]****************" && cd pygobject; fi && \
+
     cd /home/pi/gnome && \
     cd pygobject && \
     git checkout fb1b8fa8a67f2c7ea7ad4b53076496a8f2b4afdb && \
@@ -46,8 +58,10 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
     echo "****************[GSTREAMER]****************" && \
     cd /home/pi/gnome && \
     curl -L "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.8.2.tar.xz" > gstreamer-1.8.2.tar.xz && \
-    tar -xJf gstreamer-1.8.2.tar.xz && \
-    cd gstreamer-1.8.2 && \
+
+    if test ! -d /home/pi/gnome/gstreamer-1.8.2; then tar -xJf gstreamer-1.8.2.tar.xz && \
+    cd gstreamer-1.8.2; else echo "****************[gstreamer-1.8.2 exists]****************" && cd gstreamer-1.8.2; fi && \
+
     jhbuild run ./configure --enable-doc-installation=no --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
@@ -55,8 +69,10 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
     echo "****************[ORC]****************" && \
     cd /home/pi/gnome && \
     curl -L "https://gstreamer.freedesktop.org/src/orc/orc-0.4.25.tar.xz" > orc-0.4.25.tar.xz && \
-    tar -xJf orc-0.4.25.tar.xz && \
-    cd orc-0.4.25 && \
+
+    if test ! -d /home/pi/gnome/orc-0.4.25; then tar -xJf orc-0.4.25.tar.xz && \
+    cd orc-0.4.25; else echo "****************[orc-0.4.25 exists]****************" && cd orc-0.4.25; fi && \
+
     jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
@@ -64,8 +80,10 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
     echo "****************[GST-PLUGINS-BASE]****************" && \
     cd /home/pi/gnome && \
     curl -L "http://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-1.8.2.tar.xz" > gst-plugins-base-1.8.2.tar.xz && \
-    tar -xJf gst-plugins-base-1.8.2.tar.xz && \
-    cd gst-plugins-base-1.8.2 && \
+
+    if test ! -d /home/pi/gnome/gst-plugins-base-1.8.2; then tar -xJf gst-plugins-base-1.8.2.tar.xz && \
+    cd gst-plugins-base-1.8.2; else echo "****************[gst-plugins-base-1.8.2 exists]****************" && cd gst-plugins-base-1.8.2; fi && \
+
     jhbuild run ./configure --prefix=/home/pi/jhbuild --enable-orc --with-x > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
@@ -73,8 +91,10 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
     echo "****************[GST-PLUGINS-GOOD]****************" && \
     cd /home/pi/gnome && \
     curl -L "http://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.8.2.tar.xz" > gst-plugins-good-1.8.2.tar.xz && \
-    tar -xJf gst-plugins-good-1.8.2.tar.xz && \
-    cd gst-plugins-good-1.8.2 && \
+
+    if test ! -d /home/pi/gnome/gst-plugins-good-1.8.2; then tar -xJf gst-plugins-good-1.8.2.tar.xz && \
+    cd gst-plugins-good-1.8.2; else echo "****************[gst-plugins-good-1.8.2 exists]****************" && cd gst-plugins-good-1.8.2; fi && \
+
     jhbuild run ./configure --prefix=/home/pi/jhbuild --enable-orc --with-libv4l2 --with-x  > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
@@ -82,8 +102,10 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
     echo "****************[GST-PLUGINS-UGLY]****************" && \
     cd /home/pi/gnome && \
     curl -L "http://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-1.8.2.tar.xz" > gst-plugins-ugly-1.8.2.tar.xz && \
-    tar -xJf gst-plugins-ugly-1.8.2.tar.xz && \
-    cd gst-plugins-ugly-1.8.2 && \
+
+    if test ! -d /home/pi/gnome/gst-plugins-ugly-1.8.2; then tar -xJf gst-plugins-ugly-1.8.2.tar.xz && \
+    cd gst-plugins-ugly-1.8.2; else echo "****************[gst-plugins-ugly-1.8.2 exists]****************" && cd gst-plugins-ugly-1.8.2; fi && \
+
     jhbuild run ./configure --prefix=/home/pi/jhbuild --enable-orc  > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
@@ -95,8 +117,10 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
     cat /home/pi/jhbuild/bin/gdbus-codegen && \
     cd /home/pi/gnome && \
     curl -L "http://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.8.2.tar.xz" > gst-plugins-bad-1.8.2.tar.xz && \
-    tar -xJf gst-plugins-bad-1.8.2.tar.xz && \
-    cd gst-plugins-bad-1.8.2 && \
+
+    if test ! -d /home/pi/gnome/gst-plugins-bad-1.8.2; then tar -xJf gst-plugins-bad-1.8.2.tar.xz && \
+    cd gst-plugins-bad-1.8.2; else echo "****************[gst-plugins-bad-1.8.2 exists]****************" && cd gst-plugins-bad-1.8.2; fi && \
+
     jhbuild run ./configure --prefix=/home/pi/jhbuild --enable-orc  > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
@@ -104,8 +128,10 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
     echo "****************[GST-LIBAV]****************" && \
     cd /home/pi/gnome && \
     curl -L "http://gstreamer.freedesktop.org/src/gst-libav/gst-libav-1.8.2.tar.xz" > gst-libav-1.8.2.tar.xz && \
-    tar -xJf gst-libav-1.8.2.tar.xz && \
-    cd gst-libav-1.8.2 && \
+
+    if test ! -d /home/pi/gnome/gst-libav-1.8.2; then tar -xJf gst-libav-1.8.2.tar.xz && \
+    cd gst-libav-1.8.2; else echo "****************[gst-libav-1.8.2 exists]****************" && cd gst-libav-1.8.2; fi && \
+
     jhbuild run ./configure --prefix=/home/pi/jhbuild --enable-orc  > /dev/null && \
     jhbuild run make -j4  > /dev/null && \
     jhbuild run make install > /dev/null && \
@@ -113,18 +139,24 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
     echo "****************[GST-PLUGINS-ESPEAK]****************" && \
     cd $JHBUILD && \
     curl -L "https://github.com/bossjones/bossjones-gst-plugins-espeak-0-4-0/archive/v0.4.1.tar.gz" > gst-plugins-espeak-0.4.0.tar.gz && \
-    tar xvf gst-plugins-espeak-0.4.0.tar.gz && \
-    rm -rfv gst-plugins-espeak-0.4.0 && \
-    mv -fv bossjones-gst-plugins-espeak-0-4-0-0.4.1 gst-plugins-espeak-0.4.0 && \
-    cd gst-plugins-espeak-0.4.0 && \
+
+
+    if test ! -d /home/pi/gnome/gst-plugins-espeak-0.4.0; then tar xvf gst-plugins-espeak-0.4.0.tar.gz && \
+                                                               rm -rfv gst-plugins-espeak-0.4.0 && \
+                                                               mv -fv bossjones-gst-plugins-espeak-0-4-0-0.4.1 gst-plugins-espeak-0.4.0 && \
+                                                               cd gst-plugins-espeak-0.4.0;
+                                                          else echo "****************[gst-plugins-espeak-0.4.0 exists]****************" && \
+                                                               cd gst-plugins-espeak-0.4.0; fi && \
     jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run make > /dev/null && \
     jhbuild run make install > /dev/null && \
 
     echo "****************[SPHINXBASE]****************" && \
     cd $JHBUILD && \
-    git clone https://github.com/cmusphinx/sphinxbase.git && \
-    cd sphinxbase && \
+
+    if test ! -d /home/pi/gnome/sphinxbase; then git clone https://github.com/cmusphinx/sphinxbase.git && \
+    cd sphinxbase; else echo "****************[sphinxbase exists]****************" && cd sphinxbase; fi && \
+
     git checkout 74370799d5b53afc5b5b94a22f5eff9cb9907b97 && \
     cd $JHBUILD/sphinxbase && \
     jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild > /dev/null && \
@@ -134,8 +166,10 @@ if [[ ! -f "/usr/local/bin/jhbuild" ]] && [[ -f "/home/pi/jhbuild/autogen.sh" ]]
 
     echo "****************[POCKETSPHINX]****************" && \
     cd $JHBUILD && \
-    git clone https://github.com/cmusphinx/pocketsphinx.git && \
-    cd pocketsphinx && \
+
+    if test ! -d /home/pi/gnome/pocketsphinx; then git clone https://github.com/cmusphinx/pocketsphinx.git && \
+    cd pocketsphinx; else echo "****************[pocketsphinx exists]****************" && cd pocketsphinx; fi && \
+
     git checkout 68ef5dc6d48d791a747026cd43cc6940a9e19f69 && \
     jhbuild run ./autogen.sh --prefix=/home/pi/jhbuild > /dev/null && \
     jhbuild run ./configure --prefix=/home/pi/jhbuild > /dev/null && \

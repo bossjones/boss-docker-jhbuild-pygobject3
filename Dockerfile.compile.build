@@ -1,9 +1,8 @@
-FROM bossjones/boss-docker-python3:latest
+FROM bossjones/boss-docker-base-gtk3-deps:0.2.0
 MAINTAINER Malcolm Jones <bossjones@theblacktonystark.com>
 
 # Prepare packaging environment
 ENV DEBIAN_FRONTEND noninteractive
-ENV TERM "xterm-256color"
 
 # build-arg are acceptable
 # eg. docker build --build-arg var=xxx
@@ -11,77 +10,47 @@ ARG SCARLETT_ENABLE_SSHD
 ARG SCARLETT_ENABLE_DBUS
 ARG SCARLETT_BUILD_GNOME
 ARG TRAVIS_CI
+ARG STOP_AFTER_GOSS_JHBUILD
+ARG STOP_AFTER_GOSS_GTK_DEPS
+ARG SKIP_GOSS_TESTS_JHBUILD
+ARG SKIP_GOSS_TESTS_GTK_DEPS
 
 # metadata
 ARG CONTAINER_VERSION
 ARG GIT_BRANCH
 ARG GIT_SHA
+ARG BUILD_DATE
+
+# Build-time metadata as defined at http://label-schema.org
+# ARG BUILD_DATE
+# ARG VCS_REF
+# ARG VERSION
+LABEL \
+  org.label-schema.name="boss-docker-jhbuild-pygobject3" \
+  org.label-schema.description="Gnome x Jhbuild x PyGObject x Cmusphinx x Gtk+3 in Docker" \
+  org.label-schema.url="https://github.com/bossjones/boss-docker-jhbuild-pygobject3/" \
+  org.label-schema.vcs-ref=${GIT_SHA:-''} \
+  org.label-schema.vcs-url="https://github.com/bossjones/boss-docker-jhbuild-pygobject3" \
+  org.label-schema.vendor="Tonydark Labs" \
+  org.label-schema.version=${CONTAINER_VERSION:-''} \
+  org.label-schema.schema-version="1.0" \
+  org.label-schema.build-date=${BUILD_DATE:-''}
 
 ENV SCARLETT_ENABLE_SSHD ${SCARLETT_ENABLE_SSHD:-0}
 ENV SCARLETT_ENABLE_DBUS ${SCARLETT_ENABLE_DBUS:-'true'}
 ENV SCARLETT_BUILD_GNOME ${SCARLETT_BUILD_GNOME:-'true'}
 ENV TRAVIS_CI ${TRAVIS_CI:-'true'}
-
-RUN echo "SCARLETT_ENABLE_SSHD: ${SCARLETT_ENABLE_SSHD}"
-RUN echo "SCARLETT_ENABLE_DBUS: ${SCARLETT_ENABLE_DBUS}"
-RUN echo "SCARLETT_BUILD_GNOME: ${SCARLETT_BUILD_GNOME}"
-RUN echo "TRAVIS_CI: ${TRAVIS_CI}"
-
-# # include some metadata
-# ENV CONTAINER_VERSION=$CONTAINER_VERSION \
-#     GIT_BRANCH=$GIT_BRANCH \
-#     GIT_SHA=$GIT_SHA
-# RUN mkdir /image-metadata && \
-#     cd /image-metadata && \
-#     echo "$CONTAINER_VERSION" > version; \
-#     echo "$GIT_BRANCH" > git-branch; \
-#     echo "$GIT_SHA" > git-sha
-
-# make apt use ipv4 instead of ipv6 ( faster resolution )
-RUN sed -i "s@^#precedence ::ffff:0:0/96  100@precedence ::ffff:0:0/96  100@" /etc/gai.conf
-
-# Install language pack before setting env vars to utf-8
-RUN \
-  apt-get update && \
-  apt-get -y upgrade && \
-  apt-get install -y \
- 	language-pack-en-base && \
-  apt-get clean && \
-  apt-get autoclean -y && \
-  apt-get autoremove -y && \
-  rm -rf /var/lib/{cache,log}/ && \
-  rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
+ENV STOP_AFTER_GOSS_JHBUILD ${STOP_AFTER_GOSS_JHBUILD:-'true'}
+ENV STOP_AFTER_GOSS_GTK_DEPS ${STOP_AFTER_GOSS_GTK_DEPS:-'false'}
+ENV SKIP_GOSS_TESTS_JHBUILD ${SKIP_GOSS_TESTS_JHBUILD:-'false'}
+ENV SKIP_GOSS_TESTS_GTK_DEPS ${SKIP_GOSS_TESTS_GTK_DEPS:-'false'}
 
 # # Ensure UTF-8 lang and locale
-RUN locale-gen en_US.UTF-8
 ENV LANG       en_US.UTF-8
 ENV LC_ALL     en_US.UTF-8
 
 # ensure local python is preferred over distribution python
 ENV PATH /usr/local/bin:/usr/local/sbin:$PATH
-
-# lets install apt-fast
-RUN set -x \
-    apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:saiarcot895/myppa && \
-    apt-get update && \
-    echo "apt-fast apt-fast/maxdownloads string 5" | debconf-set-selections; \
-    echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections; \
-    echo "apt-fast apt-fast/aptmanager string apt-get" | debconf-set-selections; \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-fast && \
-    apt-fast update && \
-    # now that apt-fast is setup, lets clean everything in this layer
-    apt-fast autoremove -y && \
-    # now clean regular apt-get stuff
-    apt-get clean && \
-    apt-get autoclean -y && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/{cache,log}/ && \
-    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
-
-# this is what we need to sed
-# _DOWNLOADER='aria2c -c -j ${_MAXNUM} -x ${_MAXNUM} -s ${_MAXNUM} --min-split-size=1M -i ${DLLIST} --connect-timeout=600 --timeout=600 -m0'
 
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
@@ -139,231 +108,12 @@ ENV TERM "xterm-256color"
 ENV PACKAGES "python3-gi python3-gi-cairo"
 ENV CC gcc
 
-RUN ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
-    dpkg-reconfigure -f noninteractive tzdata && \
-    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-    echo 'LANG="en_US.UTF-8"' > /etc/default/locale && \
-    dpkg-reconfigure -f noninteractive locales && \
-    update-locale LANG=en_US.UTF-8 && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted' | tee /etc/apt/sources.list && \
-    echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial main restricted' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted' | tee -a /etc/apt/sources.list && \
-    echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial universe' | tee -a /etc/apt/sources.list && \
-    echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial universe' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates universe' | tee -a /etc/apt/sources.list && \
-    echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates universe' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-security main restricted' | tee -a /etc/apt/sources.list && \
-    echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-security main restricted' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-security universe' | tee -a /etc/apt/sources.list && \
-    echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-security universe' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial multiverse' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates multiverse' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://security.ubuntu.com/ubuntu xenial-security main restricted' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://security.ubuntu.com/ubuntu xenial-security main restricted' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://security.ubuntu.com/ubuntu xenial-security universe' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse' | tee -a /etc/apt/sources.list && \
-    echo 'deb http://security.ubuntu.com/ubuntu xenial-security multiverse' | tee -a /etc/apt/sources.list && \
-    cat /etc/apt/sources.list | grep -v "^#" | sort -u > /etc/apt/sources.list.bak && \
-    mv -fv /etc/apt/sources.list.bak /etc/apt/sources.list && \
-    add-apt-repository -y ppa:ricotz/testing && \
-    add-apt-repository -y ppa:gnome3-team/gnome3 && \
-    add-apt-repository -y ppa:gnome3-team/gnome3-staging && \
-    add-apt-repository -y ppa:pitti/systemd-semaphore && \
-    apt-fast update -yqq && \
-    apt-fast upgrade -yqq && \
-    export LANG=en_US.UTF-8 && \
-    apt-fast install -qqy libpulse-dev espeak && \
-    apt-cache search --names-only '^(lib)?gstreamer1.0\S*' | sed 's/\(.*\) -.*/\1 /' | grep -iv "Speech"  > dependencies && \
-    cat dependencies && \
-    apt-fast build-dep -y `cat dependencies` && \
-    apt-fast install -qqy gnome-common \
-                        gtk-doc-tools \
-                        libgtk-3-dev \
-                        libgirepository1.0-dev \
-                        yelp-tools \
-                        libgladeui-dev \
-                        python3-dev \
-                        python3-cairo-dev \
-                        python3-gi \
-                        automake \
-                        autopoint \
-                        bison \
-                        build-essential \
-                        byacc \
-                        flex \
-                        gcc \
-                        automake \
-                        autoconf \
-                        libtool \
-                        bison \
-                        swig \
-                        python-dev \
-                        libpulse-dev \
-                        gettext \
-                        gnome-common \
-                        gtk-doc-tools \
-                        libgtk-3-dev \
-                        libgirepository1.0-dev \
-                        python3-gi-cairo \
-                        yasm \
-                        nasm \
-                        bison \
-                        flex \
-                        libusb-1.0-0-dev \
-                        libgudev-1.0-dev \
-                        libxv-dev \
-                        build-essential \
-                        autotools-dev \
-                        automake \
-                        autoconf \
-                        libtool \
-                        binutils \
-                        autopoint \
-                        libxml2-dev \
-                        zlib1g-dev \
-                        libglib2.0-dev \
-                        pkg-config \
-                        flex \
-                        python \
-                        libasound2-dev \
-                        libgudev-1.0-dev \
-                        libxt-dev \
-                        libvorbis-dev \
-                        libcdparanoia-dev \
-                        libpango1.0-dev \
-                        libtheora-dev \
-                        libvisual-0.4-dev \
-                        iso-codes \
-                        libgtk-3-dev \
-                        libraw1394-dev \
-                        libiec61883-dev \
-                        libavc1394-dev \
-                        libv4l-dev \
-                        libcairo2-dev \
-                        libcaca-dev \
-                        libspeex-dev \
-                        libpng-dev \
-                        libshout3-dev \
-                        libjpeg-dev \
-                        libaa1-dev \
-                        libflac-dev \
-                        libdv4-dev \
-                        libtag1-dev \
-                        libwavpack-dev \
-                        libpulse-dev \
-                        gstreamer1.0* \
-                        lame \
-                        flac \
-                        libfftw3-dev \
-                        xvfb \
-                        gir1.2-gtk-3.0 \
-                        xsltproc \
-                        docbook-xml \
-                        docbook-xsl \
-                        python-libxml2 \
-                        sudo \
-                        # begin - gst-plugins-bad req
-                        libqt4-opengl \
-                        libdvdread4 \
-                        libdvdnav4 \
-                        libllvm3.8 \
-                        libsoundtouch-dev \
-                        libsoundtouch1 \
-                        # For general debugging
-                        gdb \
-                        strace \
-                        lsof \
-                        ltrace \
-                        yelp-xsl \
-                        docbook-xsl \
-                        docbook-xsl-doc-html \
-                        python-libxslt1 \
-                        libxslt1-dev \
-                        graphviz \
-                        openssh-server \
-                        # optimize compiling
-                        gperf \
-                        bc \
-                        ccache \
-                        file \
-                        rsync \
-                        # vim for debugging
-                        # vim for debugging
-                        vim \
-                        source-highlight \
-                        fortune \
-                        # end gst-plugins-bad req
-                        ubuntu-restricted-extras && \
-    apt-fast update && \
-    # now that apt-fast is setup, lets clean everything in this layer
-    apt-fast autoremove -y && \
-    # now clean regular apt-get stuff
-    apt-get clean && \
-    apt-get autoclean -y && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/{cache,log}/ && \
-    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
-
-
-##########################################################
-# needed to fix *.html issues
-##########################################################
-RUN apt-fast update -y && \
-    export LANG=en_US.UTF-8 && \
-    apt-fast install -y asciidoctor \
-                         libghc-cmark-prof \
-                         libghc-markdown-prof \
-                         libhtml-wikiconverter-markdown-perl \
-                         libmarkdown2-dev \
-                         libpod-markdown-perl \
-                         libsmdev-dev \
-                         libsoldout1-dev \
-                         libtext-markdown-discount-perl \
-                         libxft2-dbg \
-                         linuxdoc-tools \
-                         linuxdoc-tools-info \
-                         linuxdoc-tools-latex \
-                         linuxdoc-tools-text \
-                         markdown \
-                         python-html2text \
-                         python-markdown \
-                         python-mistune \
-                         python3-html2text \
-                         python3-markdown \
-                         python3-misaka \
-                         # specifics gtk-doc
-                         docbook-utils \
-                         docbook-xsl \
-                         docbook-simple \
-                         docbook-to-man \
-                         docbook-dsssl \
-                         jade \
-                         python3-mistune && \
-    apt-fast update && \
-    # now that apt-fast is setup, lets clean everything in this layer
-    apt-fast autoremove -y && \
-    # now clean regular apt-get stuff
-    apt-get clean && \
-    apt-get autoclean -y && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/{cache,log}/ && \
-    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
-
-# source: https://docs.docker.com/engine/examples/running_ssh_service/
-
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd \
-    && sed -i -r 's/.?UseDNS\syes/UseDNS no/' /etc/ssh/sshd_config \
-    && sed -i -r 's/.?PasswordAuthentication.+/PasswordAuthentication no/' /etc/ssh/sshd_config \
-    && sed -i -r 's/.?ChallengeResponseAuthentication.+/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
-
 # NOTE: It's an example of how to pass environment variables when running a Dockerized SSHD service.
 # NOTE: SSHD scrubs the environment, therefore ENV variables contained in Dockerfile must be pushed to
 # /etc/profile in order for them to be available.
 # source: https://stackoverflow.com/questions/36292317/why-set-visible-now-in-etc-profile
 ENV NOTVISIBLE "in users profile"
-RUN echo 'export VISIBLE=now' >> /etc/profile
+# DISABLED # RUN echo 'export VISIBLE=now' >> /etc/profile
 
 # virtualenv stuff
 ENV VIRTUALENVWRAPPER_PYTHON '/usr/local/bin/python3'
@@ -429,94 +179,7 @@ ENV USER_SSH_PUBKEY "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtv
 # https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 # source: https://github.com/jakelee8/dockerfiles/blob/b1f7fd4520ae3e1b7e9ccebf2b07381a4069cc00/images/steam/steam-ubuntu16.10/Dockerfile
 ENV XDG_RUNTIME_DIR=/run/user/1000
-
-# Source: https://github.com/ambakshi/dockerfiles/blob/09a05ceab3b5a93c974783ad27a8a6301f3c4ca2/devbox/debian8/Dockerfile
-RUN echo "[ \$UID -eq 0 ] && PS1='\[\e[31m\]\h:\w#\[\e[m\] ' || PS1='[\[\033[32m\]\u@\h\[\033[00m\] \[\033[36m\]\W\[\033[31m\]\$(__git_ps1)\[\033[00m\]] \$ '"  | tee /etc/bash_completion.d/prompt
-
-RUN set -xe \
-    && useradd -U -d ${PI_HOME} -m -r -G adm,sudo,dip,plugdev,tty,audio ${UNAME} \
-    && usermod -a -G ${UNAME} -s /bin/bash -u 1000 ${UNAME} \
-    && groupmod -g 1000 ${UNAME} \
-    && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github \
-    && mkdir -p ${PI_HOME}/dev/${GITHUB_REPO_ORG}-github/${GITHUB_REPO_NAME} \
-    && mkdir -p ${MAIN_DIR} \
-    && ( mkdir ${PI_HOME}/.ssh \
-        && chmod og-rwx ${PI_HOME}/.ssh \
-        && echo "${USER_SSH_PUBKEY}" \
-            > ${PI_HOME}/.ssh/authorized_keys \
-    ) \
-    && chown -hR ${UNAME}:${UNAME} ${MAIN_DIR} \
-    && echo 'pi     ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
-    && echo '%pi     ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
-    && cat /etc/sudoers \
-    && echo 'pi:raspberry' | chpasswd \
-    && mkdir -p "$XDG_RUNTIME_DIR" \
-    && chown -R pi:pi "$XDG_RUNTIME_DIR" \
-    && chmod -R 0700 "$XDG_RUNTIME_DIR"
-
-# FIXME: Note this line here breaks permissions due to umask 077 running as root instead of pi user
-# FIXME: removing for now, 7/20/2017
-# && ( \
-#     umask 077 \
-#     && mkdir ${PI_HOME}/.ssh \
-#     && echo "${USER_SSH_PUBKEY}" \
-#         > ${PI_HOME}/.ssh/authorized_keys \
-# ) \
-
-# Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
-# - For automated building with private repos only accessible by ssh
-#
-# ********************* ROOT ***********************************************
-RUN mkdir -p /root/.ssh && chmod og-rwx /root/.ssh && \
-    echo "Host * " > /root/.ssh/config && \
-    echo "StrictHostKeyChecking no " >> /root/.ssh/config && \
-    echo "UserKnownHostsFile=/dev/null" >> /root/.ssh/config
-
-# Prepare git to use ssh-agent, ssh keys for adobe-platform; ignore interactive knownhosts questions from ssh
-# - For automated building with private repos only accessible by ssh
-#
-# ********************* PI USER ********************************************
-RUN echo "Host * " > ${PI_HOME}/.ssh/config && \
-    echo "StrictHostKeyChecking no " >> ${PI_HOME}/.ssh/config && \
-    echo "UserKnownHostsFile=/dev/null" >> ${PI_HOME}/.ssh/config
-
-WORKDIR /home/$UNAME
-
-ENV HOME "/home/$UNAME"
-# ENV DISPLAY :1
-
-# Create a basic .jhbuildrc
-RUN echo "import os"                                   > /home/pi/.jhbuildrc && \
-    echo "prefix='$PREFIX'"                         >> /home/pi/.jhbuildrc && \
-    echo "checkoutroot='$JHBUILD'"                  >> /home/pi/.jhbuildrc && \
-    echo "moduleset = 'gnome-world'"                  >> /home/pi/.jhbuildrc && \
-    echo "interact = False"                           >> /home/pi/.jhbuildrc && \
-    echo "makeargs = '$MAKEFLAGS'"                  >> /home/pi/.jhbuildrc && \
-    echo "module_autogenargs['gtk-doc'] = 'PYTHON=/usr/bin/python3'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['CFLAGS'] = '$CFLAGS'"         >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PYTHON'] = 'python$PYTHON_VERSION_MAJOR'"           >> /home/pi/.jhbuildrc && \
-    echo "os.environ['GSTREAMER'] = '1.0'"            >> /home/pi/.jhbuildrc && \
-    echo "os.environ['ENABLE_PYTHON3'] = 'yes'"       >> /home/pi/.jhbuildrc && \
-    echo "os.environ['ENABLE_GTK'] = 'yes'"           >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PYTHON_VERSION'] = '$PYTHON_VERSION'"       >> /home/pi/.jhbuildrc && \
-    echo "os.environ['CFLAGS'] = '-fPIC -O0 -ggdb -fno-inline -fno-omit-frame-pointer'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['MAKEFLAGS'] = '-j4 V=1'"            >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PREFIX'] = '$USER_HOME/jhbuild'"   >> /home/pi/.jhbuildrc && \
-    echo "os.environ['JHBUILD'] = '$USER_HOME/gnome'"    >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PATH'] = '$PREFIX/bin:$PREFIX/sbin:$PATH'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['LD_LIBRARY_PATH'] = '$PREFIX/lib:$LD_LIBRARY_PATH'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PYTHONPATH'] = '$PREFIX/lib/python$PYTHON_VERSION/site-packages:/usr/lib/python$PYTHON_VERSION/site-packages'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PKG_CONFIG_PATH'] = '$PREFIX/lib/pkgconfig:$PREFIX/share/pkgconfig:/usr/lib/pkgconfig'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['XDG_DATA_DIRS'] = '$PREFIX/share:/usr/share'" >> /home/pi/.jhbuildrc && \
-    echo "os.environ['XDG_CONFIG_DIRS'] = '$PREFIX/etc/xdg'"        >> /home/pi/.jhbuildrc && \
-    echo "os.environ['CC'] = 'gcc'"                                   >> /home/pi/.jhbuildrc && \
-    echo "os.environ['WORKON_HOME'] = '$USER_HOME/.virtualenvs'"                           >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PROJECT_HOME'] = '$USER_HOME/dev'"                                   >> /home/pi/.jhbuildrc && \
-    echo "os.environ['VIRTUALENVWRAPPER_PYTHON'] = '$VIRTUALENVWRAPPER_PYTHON'"                  >> /home/pi/.jhbuildrc && \
-    echo "os.environ['VIRTUALENVWRAPPER_VIRTUALENV'] = '$VIRTUALENVWRAPPER_VIRTUALENV'"     >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PYTHONSTARTUP'] = '$USER_HOME/.pythonrc'"                              >> /home/pi/.jhbuildrc && \
-    echo "os.environ['PIP_DOWNLOAD_CACHE'] = '$USER_HOME/.pip/cache'"                        >> /home/pi/.jhbuildrc && \
-    cat /home/pi/.jhbuildrc
+# ENV XDG_RUNTIME_DIR=/run/pi/1000
 
 # Expose port for ssh
 EXPOSE 22
@@ -527,183 +190,42 @@ COPY ./container/root /
 # Copy over dotfiles repo, we'll use this later on to init a bunch of thing
 COPY ./dotfiles /dotfiles
 
-RUN mkdir -p /home/pi/.local/bin \
-    && cp -a /env-setup /home/pi/.local/bin/env-setup \
-    && chmod +x /home/pi/.local/bin/env-setup
+WORKDIR /home/$UNAME
 
-# NOTE: This should get around any docker permission issues we normally have
-RUN cp -a /scripts/compile_jhbuild_and_deps.sh /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
-    && chmod +x /home/pi/.local/bin/compile_jhbuild_and_deps.sh \
-    && chown pi:pi /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+ENV HOME "/home/$UNAME"
 
-# NOTE: Add dynenv script
-RUN cp -a /scripts/with-dynenv /usr/local/bin/with-dynenv \
-    && chmod +x /usr/local/bin/with-dynenv \
-    && chown pi:pi /usr/local/bin/with-dynenv
-
-# TODO: Need this ccache
-# FIXME: This needs to be duplicated in the env-setup script, etc
 ENV CCACHE_DIR /ccache
-
-# TODO: before building should help with some macro issues
-# FIXME: This needs to be duplicated in the env-setup script, etc
-# /home/pi/jhbuild/share/aclocal
-# ENV ACLOCAL_FLAGS "-I ${PREFIX}/share/aclocal"
-
-# FIXME: Do we need to add this to jhbuildrc?
-# os.environ['LDFLAGS'] = "-L" + prefix + "/lib" (in .jhbuildrc) helps if libtool picks up the wrong static libraries.
-
-# TODO: ccache.conf
-RUN mkdir -p /ccache && \
-    echo "max_size = 5.0G" > /ccache/ccache.conf && \
-    chown -R ${UNAME}:${UNAME} /ccache
 
 # NOTE: Temp run install as pi user
 USER $UNAME
 
-RUN bash /prep-pi.sh
-# Install jhbuild stuff
-RUN bash /home/pi/.local/bin/compile_jhbuild_and_deps.sh
+# FIXME: required for jhbuild( sudo apt-get install docbook-xsl build-essential git-core python-libxml2 )
+# source: https://wiki.gnome.org/HowDoI/Jhbuild
+RUN \
+    echo "SCARLETT_ENABLE_SSHD: ${SCARLETT_ENABLE_SSHD}" && \
+    echo "SCARLETT_ENABLE_DBUS: ${SCARLETT_ENABLE_DBUS}" && \
+    echo "SCARLETT_BUILD_GNOME: ${SCARLETT_BUILD_GNOME}" && \
+    echo "TRAVIS_CI: ${TRAVIS_CI}" && \
+    bash /prep-pi.sh && \
+    sudo chmod +x /prep-pi.sh /scripts/write_xdg_dir_init.sh && \
+    sudo bash /prep-pi.sh && \
+    sudo bash /scripts/write_xdg_dir_init.sh "pi" && \
+    sudo bash /scripts/write_xdg_dir_init.sh "root"; \
+    sudo mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
+    ls -lta /artifacts
 
-RUN pip install --user powerline-status && \
-    git config --global core.editor "vim" && \
-    git config --global push.default simple && \
-    git config --global color.ui true
 
 # NOTE: Return to root user when finished
 USER root
 
-RUN bash /prep-pi.sh
-
 # NOTE: Prepare XDG_RUNTIME_DIR and everything else
 # we need to run our scripts correctly
-RUN bash /scripts/write_xdg_dir_init.sh "pi"
-RUN bash /scripts/write_xdg_dir_init.sh "root"
+# RUN bash /prep-pi.sh && \
+#     bash /scripts/write_xdg_dir_init.sh "pi" && \
+#     bash /scripts/write_xdg_dir_init.sh "root"; \
 
-# Make sure the ruby2.2 packages are installed (Debian)
-RUN add-apt-repository -y ppa:brightbox/ruby-ng && \
-    apt-fast update -yqq && \
-    export LANG=en_US.UTF-8 && \
-    apt-fast install -qqy ruby2.2 ruby2.2-dev && \
-    # now that apt-fast is setup, lets clean everything in this layer
-    apt-fast autoremove -y && \
-    # now clean regular apt-get stuff
-    apt-get clean && \
-    apt-get autoclean -y && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/{cache,log}/ && \
-    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
-
-# Install powerline deps
-# source: https://hub.docker.com/r/namredips/docker-dev/~/dockerfile/
-RUN apt-fast update -yqq && \
-    export LANG=en_US.UTF-8 && \
-    apt-fast install -y autoconf automake libtool autotools-dev build-essential checkinstall bc ncurses-dev ncurses-term powerline python3-powerline fonts-powerline && \
-    # now that apt-fast is setup, lets clean everything in this layer
-    apt-fast autoremove -y && \
-    # now clean regular apt-get stuff
-    apt-get clean && \
-    apt-get autoclean -y && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/{cache,log}/ && \
-    rm -rf /var/lib/apt/lists/*.lz4 /tmp/* /var/tmp/*
-
-# RUN git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-# RUN vim +PluginInstall +qall
-
-# TODO: bash_it stuff will go here
-# RUN bash /scripts/setup_pi_user_bash_it_and_powerline.sh
-
-# install bash_it and bats
-RUN mkdir -p /home/pi/.tmp && \
-    chown pi:pi -R /home/pi/.tmp && \
-    cd /home/pi/.tmp && \
-    git clone --depth=1 https://github.com/Bash-it/bash-it.git /home/pi/.bash_it && \
-    /home/pi/.bash_it/install.sh --silent --no-modify-config && \
-    git clone --depth 1 https://github.com/sstephenson/bats.git /home/pi/.tmp/bats && \
-    /home/pi/.tmp/bats/install.sh /usr/local && \
-    chown pi:pi -R /usr/local && \
-    chown -R pi:pi /home/pi \
-    && \
-
-    # install powerline
-    # source: https://github.com/adidenko/powerline
-    # source: https://ubuntu-mate.community/t/installing-powerline-as-quickly-as-possible/5381
-    mkdir -p /home/pi/.tmp && \
-    chown pi:pi -R /home/pi/.tmp && \
-    cd /home/pi/.tmp && \
-    git clone https://github.com/powerline/fonts.git /home/pi/dev/powerline-fonts \
-    && wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf \
-    && wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf \
-    && mkdir -p /home/pi/.fonts \
-    && mv PowerlineSymbols.otf /home/pi/.fonts/ \
-    && fc-cache -vf /home/pi/.fonts/ \
-    && mkdir -p /home/pi/.config/fontconfig/conf.d/ \
-    && mv 10-powerline-symbols.conf /home/pi/.config/fontconfig/conf.d/ \
-    && touch /home/pi/.screenrc \
-    && sed -i '1i term screen-256color' /home/pi/.screenrc \
-    && git clone https://github.com/adidenko/powerline /home/pi/.config/powerline \
-    && chown -R pi:pi /home/pi \
-    && \
-
-    # rubygem defaults
-    cp -f /dotfiles/gemrc /home/pi/.gemrc \
-    && chmod 0644 /home/pi/.gemrc \
-    && chown pi:pi /home/pi/.gemrc \
-    && \
-
-    # pythonrc defaults
-    cp -f /dotfiles/pythonrc /home/pi/.pythonrc \
-    && chmod 0644 /home/pi/.pythonrc \
-    && chown pi:pi /home/pi/.pythonrc
-
-# RUN pip3 install --upgrade pip
-# RUN pip3 install ipython
-# RUN pip3 install flake8
-# RUN pip3 install pylint
-
-# NOTE: Add proper .profile and .bashrc files
-RUN cp -f /dotfiles/profile /home/pi/.profile \
-    && chmod 0644 /home/pi/.profile \
-    && chown pi:pi /home/pi/.profile \
-
-    && cp -f /dotfiles/bash_profile /home/pi/.bash_profile \
-    && chmod 0644 /home/pi/.bash_profile \
-    && chown pi:pi /home/pi/.bash_profile \
-
-    && cp -f /dotfiles/bashrc /home/pi/.bashrc \
-    && chmod 0644 /home/pi/.bashrc \
-    && chown pi:pi /home/pi/.bashrc \
-
-    && cp -a /dotfiles/bash.functions.d/. /home/pi/bash.functions.d/ \
-    && chown pi:pi -R /home/pi/bash.functions.d/ \
-    && touch /home/pi/.bash_history \
-    && chown pi:pi /home/pi/.bash_history \
-    && chmod 0600 /home/pi/.bash_history
-
-# NOTE: Temp run install as pi user
-USER $UNAME
-
-# Fixes wierd ssh permission issue
-RUN sudo mv /home/pi/.ssh /home/pi/.ssh.bak
-RUN sudo mv /home/pi/.ssh.bak /home/pi/.ssh
-RUN ls -lta /home/pi/.ssh
-
-USER root
-
-
-# FIXME: eventually we might need these guys
-# apt-get install  g++ gdb gdbserver
-
-# FIXME: Do we need this??
-# PYTHONIOENCODING="UTF-8"
-# UMASK=002
-# EDGE=0
-# source: https://github.com/hurricanehrndz/docker-containers/blob/64fe4f2f0975587a00d180330b19e0aa7596581f/headphones/Dockerfile
+#     mkdir -p /artifacts && sudo chown -R pi:pi /artifacts && \
+#     ls -lta /artifacts
 
 CMD ["/bin/bash", "/run.sh"]
 
-# TODO: 1. Add step to tar jhbuild up
-# TODO: 2. Add step to move tar.gz file to volume
-# TODO: 3. Add step to validate checksum
-# TODO: 4. Verify tar.gz is actually on disk5

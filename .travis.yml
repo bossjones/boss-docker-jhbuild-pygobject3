@@ -10,6 +10,11 @@ matrix:
       DOCKER_DATA: "$HOME/docker_data"
       DOCKER_VERSION: 17.03.1~ce-0~ubuntu-trusty
       DOCKER_COMPOSE_VERSION: 1.8.0
+      CI_CACHE_DIR: "$HOME/.cache/docker"
+      CI_CACHE_FILE_PYTHON: "$CI_CACHE_DIR/python3.tar.gz"
+      CI_CACHE_FILE_GTK: "$CI_CACHE_DIR/gtk3.tar.gz"
+      DOCKER_CACHE_FILE: "$HOME/docker/cache.tar.gz"
+      CI_CACHE_DIR_DOCKER: "$HOME/docker"
     sudo: required
     dist: trusty
     language: python
@@ -19,43 +24,87 @@ services:
   - docker
 
 before_install:
-  - sudo apt-get update
-  - travis_retry pip install coveralls
-  - sudo apt-cache search docker
+  # - sudo apt-get update
+  # - travis_retry pip install coveralls
+  # - sudo apt-cache search docker
   # List available docker versions.
-  - apt-cache madison docker-ce
-  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce=$DOCKER_VERSION
+  # - apt-cache madison docker-ce
+  # - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce=$DOCKER_VERSION
   # Update Docker. See: https://graysonkoonce.com/managing-docker-and-docker-compose-versions-on-travis-ci/.
   # - sudo apt-get -o Dpkg::Options::="--force-confnew" install -y --force-yes docker.io
   # Add docker-compose at the version specified in ENV.
-  - sudo rm -f /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
+  # - sudo rm -f /usr/local/bin/docker-compose
+  # - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  # - chmod +x docker-compose
+  # - sudo mv docker-compose /usr/local/bin
   - docker-compose --version
+  # - if [ -f ${DOCKER_CACHE_FILE} ]; then gunzip -c ${DOCKER_CACHE_FILE} | docker load; fi
+
+# cach-ing docker images
+# source: https://giorgos.sealabs.net/docker-cache-on-travis-and-docker-112.html
 
 cache:
   apt: true
+  bundler: true
+  directories:
+  - $CI_CACHE_DIR_DOCKER
+
+branches:
+  only:
+    - master
+
+# When using caches, it may be useful to run a command just before uploading the new cache archive.
+# For example, the dependency management utility may write log files into the directory you are
+# caching and you do not want them to affect the cache.
+# Use the before_cache phase to delete the log files:
+###################################################################################################
+# IMPORTANT: Failure in this phase does not mark the job as failed.
+###################################################################################################
+before_cache:
+  # Save tagged docker images
+  - >
+    mkdir -p $HOME/docker && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
+    | xargs -n 2 -t sh -c 'test -e $HOME/docker/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker/$1.tar.gz'
+
+# before_install:
+# - if [ -f ${CI_CACHE_FILE_PYTHON} ]; then ls -lta ${CI_CACHE_FILE_PYTHON}; fi
+# - if [ -f ${CI_CACHE_FILE_GTK} ]; then ls -lta ${CI_CACHE_FILE_GTK}; fi
+# - if [ -f ${CI_CACHE_FILE_PYTHON} ]; then gunzip -c ${CI_CACHE_FILE_PYTHON} | docker load; fi
+# - if [ -f ${CI_CACHE_FILE_GTK} ]; then gunzip -c ${CI_CACHE_FILE_GTK} | docker load; fi
+
+# before_install:
+#   # Load cached docker images
+#   - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
 
 install:
-  - travis_retry docker-compose pull
+  - bundle install
+  # - git commit -m ccache 2>&1 >/dev/null
   # set containers as privileged to bypass Travis environment limitations
   # NOTE: Before the docker-compose.test.yml modification this worked correctly:
-  - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
+  # - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
   # NOTE: When we move to docker-compose v2+ uncomment this below
   # - 'sed -i "/dockerfile: Dockerfile/a \ \ \ \ privileged: true" docker-compose.test.yml'
 
+# IMPORTANT: caching ... It's important that docker save happens in script step because right after this step Travis will save the contents of the cached directory.
 script:
   # - travis_retry docker-compose -f docker-compose.yml -f ci_build.yml build
   # run goss tests next
-  - travis_retry docker-compose -f docker-compose.test.yml -f ci_build.yml up --build
+  # - travis_retry docker-compose -f docker-compose.test.yml -f ci_build.yml up --build
+  - make docker_build_and_tag
+  - make test-travis
+  # - if [[ ${TRAVIS_BRANCH} == "master" ]] && [[ ${TRAVIS_PULL_REQUEST} == "false" ]]; then mkdir -p $(dirname ${DOCKER_CACHE_FILE}) ; docker save $(docker history -q ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} | grep -v '<missing>') | gzip > ${DOCKER_CACHE_FILE}; fi
 
 # source: https://github.com/inspirehep/inspire-next/blob/9700274c36074a3e43168bf48b8ba3e3bfa7bcdf/.travis.yml
 after_script:
   # Killing via SIGTERM in order to trigger atexit and dump coverage information in WSGI
-  - "docker-compose -f docker-compose.test.yml kill -s SIGTERM"
+  # - "docker-compose -f docker-compose.test.yml kill -s SIGTERM"
   - "docker images"
   - "docker ps -a"
+
+after_failure:
+  - "docker images"
+  - "docker ps -a"
+  - "ls -lta $HOME/docker"
 
 notifications:
   email:
