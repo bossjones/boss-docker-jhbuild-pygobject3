@@ -78,6 +78,7 @@ before_cache:
 
 install:
   - bundle install
+  # - git commit -m ccache 2>&1 >/dev/null
   # set containers as privileged to bypass Travis environment limitations
   # NOTE: Before the docker-compose.test.yml modification this worked correctly:
   # - 'sed -i "/build: ./a \ \ privileged: true" docker-compose.yml'
