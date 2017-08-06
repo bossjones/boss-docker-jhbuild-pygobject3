@@ -99,7 +99,7 @@ command:
   cat /var/run/s6/container_environment/PATH:
     exit-status: 0
     stdout:
-      - '/home/pi/jhbuild/bin:/home/pi/jhbuild/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+      - '/usr/lib/ccache:/home/pi/bin:/home/pi/jhbuild/bin:/home/pi/jhbuild/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
   cat /var/run/s6/container_environment/PATH_TO_DOT_VIRTUALENV:
     exit-status: 0
     stdout:
